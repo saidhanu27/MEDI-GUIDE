@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediGuide AI</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div id="authScreen">
+    <div class="auth-box">
+
+        <h1>🩺 <span>MediGuide AI</span></h1>
+
+        <div class="auth-tabs">
+            <button type="button" id="loginTabBtn" class="auth-tab active" onclick="switchAuthTab('login')" data-i18n="auth_login_tab">Login</button>
+            <button type="button" id="signupTabBtn" class="auth-tab" onclick="switchAuthTab('signup')" data-i18n="auth_signup_tab">Sign Up</button>
+        </div>
+
+        <div id="loginForm" class="auth-form">
+            <input type="text" id="loginUsername" data-i18n-placeholder="auth_username_or_email" placeholder="Username or Email">
+            <input type="password" id="loginPassword" data-i18n-placeholder="auth_password" placeholder="Password">
+            <button type="button" class="primary-btn" onclick="handleLogin()" data-i18n="auth_login_button">Login</button>
+        </div>
+
+        <div id="signupForm" class="auth-form" style="display:none;">
+            <input type="text" id="signupUsername" data-i18n-placeholder="auth_username" placeholder="Username">
+            <input type="email" id="signupEmail" data-i18n-placeholder="auth_email" placeholder="Email">
+            <input type="password" id="signupPassword" data-i18n-placeholder="auth_password_min" placeholder="Password (min 6 characters)">
+            <button type="button" class="primary-btn" onclick="handleSignup()" data-i18n="auth_signup_button">Create Account</button>
+        </div>
+
+        <p id="authError" class="auth-error"></p>
+
+    </div>
+</div>
+
+<div id="welcomeScreen" style="display:none;">
+    <div class="welcome-box">
+        <h1>🩺 <span data-i18n="welcome_title_prefix">Welcome to</span> <span>MediGuide AI</span></h1>
+        <p data-i18n="welcome_subtitle">Your AI powered health assistant. Enter your symptoms and get instant guidance.</p>
+        <button onclick="closeWelcome()"><span data-i18n="welcome_button">Next →</span></button>
+    </div>
+</div>
+<header>
+    <nav>
+       <div class="logo">
+    <span class="logo-icon">🩺</span>
+    <span>MediGuide AI</span>
+</div>
+        <ul>
+            <li><a href="#" data-i18n="nav_home">Home</a></li>
+            <li><a href="#checker" data-i18n="nav_checker">Symptom Checker</a></li>
+            <li><a href="#history" data-i18n="nav_history" onclick="loadHistory()">History</a></li>
+            <li><a href="#about" data-i18n="nav_about">About</a></li>
+        </ul>
+
+        <div class="nav-controls">
+
+            <span id="loggedInUserLabel" class="logged-in-label"></span>
+
+            <select id="languageSelect" onchange="setLanguage(this.value)">
+                <option value="en">🇬🇧 English</option>
+                <option value="hi">🇮🇳 हिंदी</option>
+                <option value="te">🇮🇳 తెలుగు</option>
+                <option value="ta">🇮🇳 தமிழ்</option>
+                <option value="kn">🇮🇳 ಕನ್ನಡ</option>
+                <option value="ml">🇮🇳 മലയാളం</option>
+            </select>
+
+            <button id="themeBtn" onclick="toggleTheme()">
+                🌙 <span data-i18n="theme_dark">Dark Mode</span>
+            </button>
+
+            <button id="logoutBtn" onclick="handleLogout()" data-i18n="auth_logout_button">Logout</button>
+
+        </div>
+    </nav>
+
+    <div class="hero">
+        <h1 data-i18n="hero_title">AI Powered Health Assistant</h1>
+        <p data-i18n="hero_subtitle">Enter your symptoms and receive AI-powered health guidance.</p>
+        <div class="algo-badge">
+            <span class="algo-dot"></span>
+            <span data-i18n="algo_badge_text">Powered by Random Forest Machine Learning Algorithm</span>
+        </div>
+    </div>
+</header>
+
+<section id="checker" class="container">
+
+    <div class="card">
+
+        <h2 data-i18n="section_patient_details">Patient Details</h2>
+    <input
+    type="text"
+    id="patientName"
+    data-i18n-placeholder="placeholder_patient_name"
+    placeholder="Enter Patient Name">
+        <input
+    type="number"
+    id="age"
+    data-i18n-placeholder="placeholder_age"
+    placeholder="Enter Age"
+    min="1"
+    max="120">
+
+        <select id="gender">
+            <option value="" data-i18n="gender_select">Select Gender</option>
+            <option value="Male" data-i18n="gender_male">Male</option>
+            <option value="Female" data-i18n="gender_female">Female</option>
+            <option value="Other" data-i18n="gender_other">Other</option>
+        </select>
+
+        <h2 data-i18n="section_select_symptoms">Select Symptoms</h2>
+
+        <div class="symptoms">
+
+            <label><input type="checkbox" value="Fever"> <span data-i18n="symptom_fever">Fever</span></label>
+
+            <label><input type="checkbox" value="Headache"> <span data-i18n="symptom_headache">Headache</span></label>
+
+            <label><input type="checkbox" value="Cough"> <span data-i18n="symptom_cough">Cough</span></label>
+
+            <label><input type="checkbox" value="Body Pain"> <span data-i18n="symptom_bodypain">Body Pain</span></label>
+
+            <label><input type="checkbox" value="Vomiting"> <span data-i18n="symptom_vomiting">Vomiting</span></label>
+
+            <label><input type="checkbox" value="Stomach Pain"> <span data-i18n="symptom_stomachpain">Stomach Pain</span></label>
+
+            <label><input type="checkbox" value="Chest Pain"> <span data-i18n="symptom_chestpain">Chest Pain</span></label>
+
+            <label><input type="checkbox" value="Shortness of Breath"> <span data-i18n="symptom_breath">Shortness of Breath</span></label>
+
+            <label><input type="checkbox" value="Fatigue"> <span data-i18n="symptom_fatigue">Fatigue</span></label>
+
+            <label><input type="checkbox" value="Dizziness"> <span data-i18n="symptom_dizziness">Dizziness</span></label>
+
+            <label><input type="checkbox" value="Sore Throat"> <span data-i18n="symptom_sorethroat">Sore Throat</span></label>
+
+            <label><input type="checkbox" value="Skin Rash"> <span data-i18n="symptom_skinrash">Skin Rash</span></label>
+
+            <label><input type="checkbox" value="Joint Pain"> <span data-i18n="symptom_jointpain">Joint Pain</span></label>
+
+            <label><input type="checkbox" value="Diarrhea"> <span data-i18n="symptom_diarrhea">Diarrhea</span></label>
+
+            <label><input type="checkbox" value="Loss of Appetite"> <span data-i18n="symptom_lossofappetite">Loss of Appetite</span></label>
+
+        </div>
+
+        <h3 data-i18n="section_additional_symptoms">Additional Symptoms</h3>
+
+        <textarea id="extraSymptoms" data-i18n-placeholder="placeholder_extra_symptoms" placeholder="Type any additional symptoms..."></textarea>
+
+<div class="action-toolbar">
+
+    <button type="button" id="voiceBtn" class="toolbar-btn secondary" onclick="startVoiceInput()">
+        <span class="btn-icon">🎤</span><span data-i18n="btn_speak">Speak Symptoms</span>
+    </button>
+
+    <button type="button" class="toolbar-btn secondary" onclick="resetForm()">
+        <span class="btn-icon">🔄</span><span data-i18n="btn_reset">Reset</span>
+    </button>
+
+</div>
+
+<button id="analyzeBtn" class="primary-btn" onclick="analyzeSymptoms()">
+    <span class="btn-icon">🔍</span><span data-i18n="btn_analyze">Analyze Symptoms</span>
+</button>
+
+<div id="loading" style="display:none;">
+    <div class="spinner"></div>
+    <p data-i18n="loading_text">Analyzing symptoms with AI...</p>
+</div>
+
+<div class="action-toolbar">
+
+    <button class="toolbar-btn secondary" onclick="downloadPDF()">
+        <span class="btn-icon">📄</span><span data-i18n="btn_download">Download PDF</span>
+    </button>
+
+    <button class="toolbar-btn secondary" onclick="findHospitalForMySymptoms()">
+        <span class="btn-icon">🏥</span><span data-i18n="hf_button_short">Find Hospital</span>
+    </button>
+
+</div>
+
+<div id="doctorHospitalResult"></div>
+<div id="result"></div>
+        <br>
+
+
+
+    </div>
+
+</section>
+
+<section id="history" class="container">
+
+    <div class="card">
+
+        <h2 data-i18n="history_title">📜 Your Past Checks</h2>
+        <p class="hf-subtitle" data-i18n="history_subtitle">
+            Only visible to you — your last 20 symptom checks.
+        </p>
+
+        <div id="historyList"></div>
+
+    </div>
+
+</section>
+
+<section id="about">
+
+<h2 data-i18n="about_title">About MediGuide AI</h2>
+
+<p data-i18n="about_text">
+MediGuide AI is an AI-powered symptom analysis system developed for educational purposes.
+It provides possible health conditions, general medicine information, food suggestions,
+and guidance on the type of doctor to consult.
+It is not a substitute for professional medical advice.
+</p>
+
+<p class="about-algo-line" data-i18n="about_algo_text">
+The core prediction engine is built on the Random Forest Classifier,
+a supervised Machine Learning algorithm trained on labelled symptom-to-disease data.
+</p>
+
+</section>
+
+<footer>
+
+<span data-i18n="footer_text">© 2026 MediGuide AI | Educational Project</span>
+
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="translations.js"></script>
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
