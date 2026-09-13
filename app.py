@@ -37,8 +37,8 @@ database.init_db()
 
 
 @app.route("/")
-def serve_index():
-    return send_from_directory(FRONTEND_DIR, "index.html")
+def home():
+    return send_from_directory('.', "index.html")
 
 
 @app.route("/<path:filename>")
