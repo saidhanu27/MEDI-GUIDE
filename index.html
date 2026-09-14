@@ -24,14 +24,14 @@
         <div id="loginForm" class="auth-form">
             <input type="text" id="loginUsername" data-i18n-placeholder="auth_username_or_email" placeholder="Username or Email">
             <input type="password" id="loginPassword" data-i18n-placeholder="auth_password" placeholder="Password">
-            <button type="button" class="primary-btn" onclick="handleLogin()" data-i18n="auth_login_button">Login</button>
+            <button type="button" id="loginSubmitBtn" class="primary-btn" onclick="handleLogin()" data-i18n="auth_login_button">Login</button>
         </div>
 
         <div id="signupForm" class="auth-form" style="display:none;">
             <input type="text" id="signupUsername" data-i18n-placeholder="auth_username" placeholder="Username">
             <input type="email" id="signupEmail" data-i18n-placeholder="auth_email" placeholder="Email">
             <input type="password" id="signupPassword" data-i18n-placeholder="auth_password_min" placeholder="Password (min 6 characters)">
-            <button type="button" class="primary-btn" onclick="handleSignup()" data-i18n="auth_signup_button">Create Account</button>
+            <button type="button" id="signupSubmitBtn" class="primary-btn" onclick="handleSignup()" data-i18n="auth_signup_button">Create Account</button>
         </div>
 
         <p id="authError" class="auth-error"></p>
@@ -43,7 +43,7 @@
     <div class="welcome-box">
         <h1>🩺 <span data-i18n="welcome_title_prefix">Welcome to</span> <span>MediGuide AI</span></h1>
         <p data-i18n="welcome_subtitle">Your AI powered health assistant. Enter your symptoms and get instant guidance.</p>
-        <button onclick="closeWelcome()"><span data-i18n="welcome_button">Next →</span></button>
+        <button type="button" onclick="closeWelcome()"><span data-i18n="welcome_button">Next →</span></button>
     </div>
 </div>
 <header>
@@ -72,11 +72,11 @@
                 <option value="ml">🇮🇳 മലയാളం</option>
             </select>
 
-            <button id="themeBtn" onclick="toggleTheme()">
+            <button type="button" id="themeBtn" onclick="toggleTheme()">
                 🌙 <span data-i18n="theme_dark">Dark Mode</span>
             </button>
 
-            <button id="logoutBtn" onclick="handleLogout()" data-i18n="auth_logout_button">Logout</button>
+            <button type="button" id="logoutBtn" onclick="handleLogout()" data-i18n="auth_logout_button">Logout</button>
 
         </div>
     </nav>
@@ -168,7 +168,7 @@
 
 </div>
 
-<button id="analyzeBtn" class="primary-btn" onclick="analyzeSymptoms()">
+<button type="button" id="analyzeBtn" class="primary-btn" onclick="analyzeSymptoms(event)">
     <span class="btn-icon">🔍</span><span data-i18n="btn_analyze">Analyze Symptoms</span>
 </button>
 
@@ -179,11 +179,11 @@
 
 <div class="action-toolbar">
 
-    <button class="toolbar-btn secondary" onclick="downloadPDF()">
+    <button type="button" class="toolbar-btn secondary" onclick="downloadPDF()">
         <span class="btn-icon">📄</span><span data-i18n="btn_download">Download PDF</span>
     </button>
 
-    <button class="toolbar-btn secondary" onclick="findHospitalForMySymptoms()">
+    <button type="button" class="toolbar-btn secondary" onclick="findHospitalForMySymptoms()">
         <span class="btn-icon">🏥</span><span data-i18n="hf_button_short">Find Hospital</span>
     </button>
 

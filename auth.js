@@ -62,6 +62,7 @@ async function handleSignup() {
     const email = document.getElementById("signupEmail").value.trim();
     const password = document.getElementById("signupPassword").value;
     const authError = document.getElementById("authError");
+    const btn = document.getElementById("signupSubmitBtn");
 
     authError.textContent = "";
 
@@ -69,6 +70,12 @@ async function handleSignup() {
         authError.textContent = t("auth_error_fill_all");
         return;
     }
+
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = t("auth_connecting");
+    authError.textContent = t("auth_first_load_hint");
+    authError.style.color = "var(--text-dim)";
 
     try {
 
@@ -81,15 +88,23 @@ async function handleSignup() {
         const data = await response.json();
 
         if (!response.ok) {
+            authError.style.color = "";
             authError.textContent = data.error || t("auth_error_generic");
+            btn.disabled = false;
+            btn.textContent = originalText;
             return;
         }
 
         setAuthToken(data.token);
         onLoginSuccess(data.user);
+        btn.disabled = false;
+        btn.textContent = originalText;
 
     } catch (err) {
+        authError.style.color = "";
         authError.textContent = t("auth_error_backend_unreachable");
+        btn.disabled = false;
+        btn.textContent = originalText;
         console.error(err);
     }
 
@@ -100,6 +115,7 @@ async function handleLogin() {
     const username = document.getElementById("loginUsername").value.trim();
     const password = document.getElementById("loginPassword").value;
     const authError = document.getElementById("authError");
+    const btn = document.getElementById("loginSubmitBtn");
 
     authError.textContent = "";
 
@@ -107,6 +123,12 @@ async function handleLogin() {
         authError.textContent = t("auth_error_fill_all");
         return;
     }
+
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = t("auth_connecting");
+    authError.textContent = t("auth_first_load_hint");
+    authError.style.color = "var(--text-dim)";
 
     try {
 
@@ -119,15 +141,23 @@ async function handleLogin() {
         const data = await response.json();
 
         if (!response.ok) {
+            authError.style.color = "";
             authError.textContent = data.error || t("auth_error_generic");
+            btn.disabled = false;
+            btn.textContent = originalText;
             return;
         }
 
         setAuthToken(data.token);
         onLoginSuccess(data.user);
+        btn.disabled = false;
+        btn.textContent = originalText;
 
     } catch (err) {
+        authError.style.color = "";
         authError.textContent = t("auth_error_backend_unreachable");
+        btn.disabled = false;
+        btn.textContent = originalText;
         console.error(err);
     }
 

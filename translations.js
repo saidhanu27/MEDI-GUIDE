@@ -122,7 +122,10 @@ const TRANSLATIONS = {
         history_title: "📜 Your Past Checks",
         history_subtitle: "Only visible to you — your last 20 symptom checks.",
         history_login_required: "Please log in to see your history.",
-        history_empty: "No past checks yet. Analyze your symptoms to get started.",    },
+        history_empty: "No past checks yet. Analyze your symptoms to get started.",
+        auth_connecting: "Connecting...",
+        auth_first_load_hint: "First load can take up to a minute if the server was asleep. Please wait..."
+    },
 
     hi: {
         _name_for_ai: "Hindi",
@@ -241,7 +244,10 @@ const TRANSLATIONS = {
         history_title: "📜 आपकी पिछली जांचें",
         history_subtitle: "केवल आपको दिखाई देता है — आपकी पिछली 20 लक्षण जांचें।",
         history_login_required: "अपना इतिहास देखने के लिए कृपया लॉगिन करें।",
-        history_empty: "अभी तक कोई जांच नहीं। शुरू करने के लिए अपने लक्षणों का विश्लेषण करें।",    },
+        history_empty: "अभी तक कोई जांच नहीं। शुरू करने के लिए अपने लक्षणों का विश्लेषण करें।",
+        auth_connecting: "कनेक्ट हो रहा है...",
+        auth_first_load_hint: "अगर सर्वर सो रहा था तो पहली बार लोड होने में एक मिनट तक लग सकता है। कृपया प्रतीक्षा करें..."
+    },
 
     te: {
         _name_for_ai: "Telugu",
@@ -360,7 +366,10 @@ const TRANSLATIONS = {
         history_title: "📜 మీ Past Checks",
         history_subtitle: "మీకు మాత్రమే కనిపిస్తుంది — మీ చివరి 20 symptom checks.",
         history_login_required: "మీ history చూడాలంటే దయచేసి login చేయండి.",
-        history_empty: "ఇంకా ఏ checks లేవు. మీ symptoms analyze చేసి start చేయండి.",    },
+        history_empty: "ఇంకా ఏ checks లేవు. మీ symptoms analyze చేసి start చేయండి.",
+        auth_connecting: "కనెక్ట్ అవుతోంది...",
+        auth_first_load_hint: "Server sleep లో ఉంటే, మొదటి సారి load అవ్వడానికి ఒక నిమిషం పట్టొచ్చు. దయచేసి వేచి ఉండండి..."
+    },
 
     ta: {
         _name_for_ai: "Tamil",
@@ -479,7 +488,10 @@ const TRANSLATIONS = {
         history_title: "📜 உங்கள் கடந்தகால சோதனைகள்",
         history_subtitle: "உங்களுக்கு மட்டுமே தெரியும் — உங்கள் கடைசி 20 அறிகுறி சோதனைகள்.",
         history_login_required: "உங்கள் வரலாற்றைக் காண உள்நுழையவும்.",
-        history_empty: "இதுவரை சோதனைகள் இல்லை. தொடங்க உங்கள் அறிகுறிகளை பகுப்பாய்வு செய்யவும்.",    },
+        history_empty: "இதுவரை சோதனைகள் இல்லை. தொடங்க உங்கள் அறிகுறிகளை பகுப்பாய்வு செய்யவும்.",
+        auth_connecting: "இணைக்கிறது...",
+        auth_first_load_hint: "சேவையகம் தூங்கிக்கொண்டிருந்தால், முதல் முறை ஏற்ற ஒரு நிமிடம் ஆகலாம். தயவுசெய்து காத்திருக்கவும்..."
+    },
 
     kn: {
         _name_for_ai: "Kannada",
@@ -598,7 +610,10 @@ const TRANSLATIONS = {
         history_title: "📜 ನಿಮ್ಮ ಹಿಂದಿನ ಪರಿಶೀಲನೆಗಳು",
         history_subtitle: "ನಿಮಗೆ ಮಾತ್ರ ಗೋಚರಿಸುತ್ತದೆ — ನಿಮ್ಮ ಕೊನೆಯ 20 ಲಕ್ಷಣ ಪರಿಶೀಲನೆಗಳು.",
         history_login_required: "ನಿಮ್ಮ ಇತಿಹಾಸವನ್ನು ನೋಡಲು ದಯವಿಟ್ಟು ಲಾಗಿನ್ ಮಾಡಿ.",
-        history_empty: "ಇನ್ನೂ ಯಾವುದೇ ಪರಿಶೀಲನೆಗಳಿಲ್ಲ. ಪ್ರಾರಂಭಿಸಲು ನಿಮ್ಮ ಲಕ್ಷಣಗಳನ್ನು ವಿಶ್ಲೇಷಿಸಿ.",    },
+        history_empty: "ಇನ್ನೂ ಯಾವುದೇ ಪರಿಶೀಲನೆಗಳಿಲ್ಲ. ಪ್ರಾರಂಭಿಸಲು ನಿಮ್ಮ ಲಕ್ಷಣಗಳನ್ನು ವಿಶ್ಲೇಷಿಸಿ.",
+        auth_connecting: "ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...",
+        auth_first_load_hint: "ಸರ್ವರ್ ನಿದ್ರೆಯಲ್ಲಿದ್ದರೆ, ಮೊದಲ ಬಾರಿ ಲೋಡ್ ಆಗಲು ಒಂದು ನಿಮಿಷ ತೆಗೆದುಕೊಳ್ಳಬಹುದು. ದಯವಿಟ್ಟು ಕಾಯಿರಿ..."
+    },
 
     ml: {
         _name_for_ai: "Malayalam",
@@ -717,7 +732,10 @@ const TRANSLATIONS = {
         history_title: "📜 നിങ്ങളുടെ മുൻ പരിശോധനകൾ",
         history_subtitle: "നിങ്ങൾക്ക് മാത്രം ദൃശ്യമാകും — നിങ്ങളുടെ അവസാന 20 ലക്ഷണ പരിശോധനകൾ.",
         history_login_required: "നിങ്ങളുടെ ചരിത്രം കാണാൻ ദയവായി ലോഗിൻ ചെയ്യുക.",
-        history_empty: "ഇതുവരെ പരിശോധനകളൊന്നുമില്ല. ആരംഭിക്കാൻ നിങ്ങളുടെ ലക്ഷണങ്ങൾ വിശകലനം ചെയ്യുക.",    },
+        history_empty: "ഇതുവരെ പരിശോധനകളൊന്നുമില്ല. ആരംഭിക്കാൻ നിങ്ങളുടെ ലക്ഷണങ്ങൾ വിശകലനം ചെയ്യുക.",
+        auth_connecting: "ബന്ധിപ്പിക്കുന്നു...",
+        auth_first_load_hint: "സെർവർ ഉറങ്ങുകയായിരുന്നെങ്കിൽ, ആദ്യ ലോഡിന് ഒരു മിനിറ്റ് വരെ എടുത്തേക്കാം. ദയവായി കാത്തിരിക്കുക..."
+    },
 };
 
 // Currently active language code — read by script.js when building the AI prompt
