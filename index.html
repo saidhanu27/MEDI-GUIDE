@@ -22,15 +22,15 @@
         </div>
 
         <div id="loginForm" class="auth-form">
-            <input type="text" id="loginUsername" data-i18n-placeholder="auth_username_or_email" placeholder="Username or Email">
-            <input type="password" id="loginPassword" data-i18n-placeholder="auth_password" placeholder="Password">
+            <input type="text" id="loginUsername" data-i18n-placeholder="auth_username_or_email" placeholder="Username or Email" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+            <input type="password" id="loginPassword" data-i18n-placeholder="auth_password" placeholder="Password" autocomplete="current-password">
             <button type="button" id="loginSubmitBtn" class="primary-btn" onclick="handleLogin()" data-i18n="auth_login_button">Login</button>
         </div>
 
         <div id="signupForm" class="auth-form" style="display:none;">
-            <input type="text" id="signupUsername" data-i18n-placeholder="auth_username" placeholder="Username">
-            <input type="email" id="signupEmail" data-i18n-placeholder="auth_email" placeholder="Email">
-            <input type="password" id="signupPassword" data-i18n-placeholder="auth_password_min" placeholder="Password (min 6 characters)">
+            <input type="text" id="signupUsername" data-i18n-placeholder="auth_username" placeholder="Username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+            <input type="email" id="signupEmail" data-i18n-placeholder="auth_email" placeholder="Email" autocomplete="email" autocapitalize="none" autocorrect="off" spellcheck="false">
+            <input type="password" id="signupPassword" data-i18n-placeholder="auth_password_min" placeholder="Password (min 6 characters)" autocomplete="new-password">
             <button type="button" id="signupSubmitBtn" class="primary-btn" onclick="handleSignup()" data-i18n="auth_signup_button">Create Account</button>
         </div>
 
@@ -102,25 +102,27 @@
     <div class="card">
 
         <h2 data-i18n="section_patient_details">Patient Details</h2>
-    <input
-    type="text"
-    id="patientName"
-    data-i18n-placeholder="placeholder_patient_name"
-    placeholder="Enter Patient Name">
-        <input
-    type="number"
-    id="age"
-    data-i18n-placeholder="placeholder_age"
-    placeholder="Enter Age"
-    min="1"
-    max="120">
+        <div class="patient-grid">
+            <input
+            type="text"
+            id="patientName"
+            data-i18n-placeholder="placeholder_patient_name"
+            placeholder="Enter Patient Name">
+            <input
+            type="number"
+            id="age"
+            data-i18n-placeholder="placeholder_age"
+            placeholder="Enter Age"
+            min="1"
+            max="120">
 
-        <select id="gender">
-            <option value="" data-i18n="gender_select">Select Gender</option>
-            <option value="Male" data-i18n="gender_male">Male</option>
-            <option value="Female" data-i18n="gender_female">Female</option>
-            <option value="Other" data-i18n="gender_other">Other</option>
-        </select>
+            <select id="gender">
+                <option value="" data-i18n="gender_select">Select Gender</option>
+                <option value="Male" data-i18n="gender_male">Male</option>
+                <option value="Female" data-i18n="gender_female">Female</option>
+                <option value="Other" data-i18n="gender_other">Other</option>
+            </select>
+        </div>
 
         <h2 data-i18n="section_select_symptoms">Select Symptoms</h2>
 

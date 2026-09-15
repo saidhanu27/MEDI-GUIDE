@@ -404,31 +404,30 @@ with your actual assessed health score number.
 <div class="top-dashboard">
 
     <div class="dashboard-card">
-
         <h2>❤️ ${t("health_score_word")}</h2>
-
         <div class="score-circle">
-
-            <div class="score-value">
-                ${healthScore}/100
-            </div>
-
+            <div class="score-value">${healthScore}/100</div>
         </div>
-
-        <div class="score-status ${statusClass}">
-            ${healthStatus}
-        </div>
-
+        <div class="score-status ${statusClass}">${healthStatus}</div>
+        <div class="card-meta-hint">AI Overall Wellness Index</div>
     </div>
 
     <div class="risk-card">
-
         <h2>📊 ${t("risk_level_word")}</h2>
-
-        <div class="risk-badge ${riskBadge}">
-            ${riskClass.replace("risk-", "").toUpperCase()}
+        <div class="risk-visual-box ${riskBadge}">
+            <span class="risk-emoji">${riskBadge === 'high' ? '🚨' : (riskBadge === 'medium' ? '⚠️' : '✅')}</span>
+            <div class="risk-badge ${riskBadge}">
+                ${riskClass.replace("risk-", "").toUpperCase()} RISK
+            </div>
         </div>
-
+        <div class="risk-meter-bar">
+            <div class="meter-segment seg-low ${riskBadge === 'low' ? 'active' : ''}">Low</div>
+            <div class="meter-segment seg-med ${riskBadge === 'medium' ? 'active' : ''}">Medium</div>
+            <div class="meter-segment seg-high ${riskBadge === 'high' ? 'active' : ''}">High</div>
+        </div>
+        <div class="risk-advisory-text">
+            ${riskBadge === 'high' ? 'Immediate doctor consultation recommended.' : (riskBadge === 'medium' ? 'Moderate attention needed. Monitor symptoms closely.' : 'Mild symptoms observed. Maintain hydration and rest.')}
+        </div>
     </div>
 
 </div>

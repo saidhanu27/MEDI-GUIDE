@@ -96,6 +96,9 @@ async function handleSignup() {
         }
 
         setAuthToken(data.token);
+        try {
+            localStorage.setItem("mediguide_last_user", username || email);
+        } catch(e) {}
         onLoginSuccess(data.user);
         btn.disabled = false;
         btn.textContent = originalText;
@@ -149,6 +152,9 @@ async function handleLogin() {
         }
 
         setAuthToken(data.token);
+        try {
+            localStorage.setItem("mediguide_last_user", username);
+        } catch(e) {}
         onLoginSuccess(data.user);
         btn.disabled = false;
         btn.textContent = originalText;
@@ -333,6 +339,37 @@ document.addEventListener("DOMContentLoaded", async function () {
     } else {
         document.getElementById("authScreen").style.display = "flex";
         document.getElementById("welcomeScreen").style.display = "none";
+
+        // Pre-fill remembered username/email so user can easily log back in
+        try {
+            const lastUser = localStorage.getItem("mediguide_last_user");
+            const loginUserField = document.getElementById("loginUsername");
+            if (lastUser && loginUserField && !loginUserField.value) {
+                loginUserField.value = lastUser;
+                const pwdField = document.getElementById("loginPassword");
+                if (pwdField) pwdField.focus();
+            }
+        } catch (e) {}
     }
+
+    // Enable Enter key on login fields
+    ["loginUsername", "loginPassword"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") handleLogin();
+            });
+        }
+    });
+
+    // Enable Enter key on signup fields
+    ["signupUsername", "signupEmail", "signupPassword"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") handleSignup();
+            });
+        }
+    });
 
 });

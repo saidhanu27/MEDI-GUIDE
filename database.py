@@ -82,6 +82,8 @@ def create_user(username, email, password):
     conn = get_connection()
     cur = conn.cursor()
 
+    username = (username or "").strip()
+    email = (email or "").strip().lower()
     password_hash = generate_password_hash(password)
     created_at = datetime.datetime.utcnow().isoformat()
 
@@ -100,11 +102,13 @@ def create_user(username, email, password):
 
 
 def verify_user(username_or_email, password):
+    username_or_email = (username_or_email or "").strip()
     conn = get_connection()
     cur = conn.cursor()
 
+    # Case-insensitive check so mobile auto-capitalized letters match registered users
     cur.execute(
-        "SELECT * FROM users WHERE username = ? OR email = ?",
+        "SELECT * FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)",
         (username_or_email, username_or_email)
     )
     user = cur.fetchone()
