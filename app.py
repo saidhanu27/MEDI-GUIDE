@@ -26,9 +26,8 @@ import re
 
 import database
 
-# The frontend files (index.html, script.js, style.css, ...) live one
-# folder up from this file (backend/app.py -> ../index.html)
-FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+# Frontend files (index.html, script.js, style.css, etc.) live in the same directory as app.py
+FRONTEND_DIR = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path="")
 CORS(app)  # harmless to keep even when same-origin; avoids issues if opened separately
@@ -38,7 +37,7 @@ database.init_db()
 
 @app.route("/")
 def home():
-    return send_from_directory('.', "index.html")
+    return send_from_directory(FRONTEND_DIR, "index.html")
 
 
 @app.route("/<path:filename>")
@@ -163,7 +162,8 @@ def get_history():
     history = database.get_history_for_user(user["id"])
     return jsonify({"history": history})
 
-with open("model.pkl", "rb") as f:
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "model.pkl")
+with open(MODEL_PATH, "rb") as f:
     saved = pickle.load(f)
 
 model = saved["model"]

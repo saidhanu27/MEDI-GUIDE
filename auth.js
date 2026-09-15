@@ -189,6 +189,10 @@ function onLoginSuccess(user) {
     updateLoggedInLabel();
 }
 
+function continueAsGuest() {
+    onLoginSuccess({ id: 0, username: "Guest User", email: "guest@mediguide.ai" });
+}
+
 function updateLoggedInLabel() {
     const label = document.getElementById("loggedInUserLabel");
     if (label && window.__currentUser) {

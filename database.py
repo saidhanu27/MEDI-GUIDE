@@ -20,7 +20,8 @@ import secrets
 import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
-DB_PATH = "mediguide.db"
+import os
+DB_PATH = os.path.join(os.path.dirname(__file__), "mediguide.db")
 
 
 def get_connection():
