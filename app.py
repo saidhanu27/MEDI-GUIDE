@@ -560,6 +560,29 @@ def haversine_km(lat1, lng1, lat2, lng2):
     return R * 2 * math.asin(math.sqrt(a))
 
 
+DISEASE_HALLMARKS = {
+    "Arthritis": ["Joint Pain"],
+    "Chickenpox": ["Skin Rash"],
+    "Migraine": ["Headache"],
+    "Urinary Tract Infection": ["Stomach Pain"],
+    "Heart Related Issue": ["Chest Pain"],
+    "Asthma": ["Shortness of Breath", "Cough"],
+    "Bronchitis": ["Cough", "Shortness of Breath"],
+    "Pneumonia": ["Cough", "Shortness of Breath", "Chest Pain"],
+    "Food Poisoning": ["Vomiting", "Stomach Pain", "Diarrhea"],
+    "Gastroenteritis": ["Vomiting", "Stomach Pain", "Diarrhea"],
+    "Gastritis": ["Stomach Pain", "Vomiting"],
+    "Tonsillitis": ["Sore Throat"],
+    "Sinusitis": ["Headache", "Sore Throat"],
+    "Allergic Reaction": ["Skin Rash", "Shortness of Breath"],
+    "Vertigo": ["Dizziness"],
+    "Hypertension": ["Headache", "Dizziness", "Chest Pain"],
+    "Anemia": ["Fatigue", "Dizziness"],
+    "Jaundice": ["Vomiting", "Stomach Pain", "Loss of Appetite"],
+    "Diabetes Complications": ["Fatigue", "Dizziness", "Loss of Appetite"]
+}
+
+
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.get_json(force=True)
@@ -572,7 +595,35 @@ def predict():
     feature_vector = [1 if s in selected_symptoms else 0 for s in SYMPTOMS]
     X = np.array(feature_vector).reshape(1, -1)
 
-    probabilities = model.predict_proba(X)[0]
+    raw_probs = model.predict_proba(X)[0].copy()
+    num_symptoms = len(selected_symptoms)
+
+    # 1. Clinical Hallmark Validation:
+    # A specific disease cannot be diagnosed if its hallmark symptom is absent!
+    for idx, d_name in enumerate(CLASSES):
+        if d_name in DISEASE_HALLMARKS:
+            required = DISEASE_HALLMARKS[d_name]
+            if not any(req in selected_symptoms for req in required):
+                raw_probs[idx] *= 0.02
+
+    # 2. Symptom Pattern Recognition:
+    # Common viral symptom cluster: Fever + Body Pain / Fatigue
+    if "Fever" in selected_symptoms and ("Body Pain" in selected_symptoms or "Fatigue" in selected_symptoms):
+        for idx, d_name in enumerate(CLASSES):
+            if d_name in ["Flu", "Common Cold"]:
+                raw_probs[idx] *= 5.0
+            elif d_name in ["Dengue", "Typhoid", "Malaria"]:
+                if "Joint Pain" in selected_symptoms or "Skin Rash" in selected_symptoms or "Vomiting" in selected_symptoms:
+                    raw_probs[idx] *= 3.0
+                else:
+                    raw_probs[idx] *= 0.8
+
+    # Normalize probabilities
+    if raw_probs.sum() > 0:
+        probabilities = raw_probs / raw_probs.sum()
+    else:
+        probabilities = raw_probs
+
     predicted_index = int(np.argmax(probabilities))
     predicted_disease = CLASSES[predicted_index]
     confidence = round(float(probabilities[predicted_index]) * 100, 2)
@@ -584,12 +635,19 @@ def predict():
         for i in top3_idx
     ]
 
-    if predicted_disease in HIGH_RISK_DISEASES:
+    # 3. Dynamic Clinical Risk Assessment:
+    # - Immediate RED FLAGS: Chest Pain or Shortness of Breath -> High Risk
+    # - Severe multi-symptom illness (>= 5 symptoms) -> High Risk
+    # - Moderate illness (3-4 symptoms or specific diseases) -> Medium Risk
+    # - Mild / early symptoms (1-2 symptoms without red flags) -> Low Risk
+    has_red_flags = ("Chest Pain" in selected_symptoms) or ("Shortness of Breath" in selected_symptoms)
+
+    if has_red_flags or num_symptoms >= 5 or predicted_disease in ["Heart Related Issue", "Pneumonia", "COVID-19"]:
         risk = "High"
-    elif predicted_disease in MEDIUM_RISK_DISEASES:
+    elif num_symptoms >= 3 or predicted_disease in ["Dengue", "Typhoid", "Malaria", "Food Poisoning", "Gastroenteritis", "Hypertension", "Diabetes Complications", "Jaundice"]:
         risk = "Medium"
     else:
-        risk = "Low"
+        risk = "Low" if num_symptoms <= 2 and predicted_disease in ["Common Cold", "Flu", "Sinusitis", "Tonsillitis", "Migraine", "Vertigo"] else "Medium"
 
     specialist = DISEASE_TO_SPECIALIST.get(predicted_disease, "General Physician")
 
@@ -599,7 +657,7 @@ def predict():
         "risk_level": risk,
         "top_predictions": top3,
         "recommended_specialist": specialist,
-        "algorithm": "Random Forest Classifier (scikit-learn)"
+        "algorithm": "Random Forest Classifier (scikit-learn) with Clinical Triage"
     })
 
 

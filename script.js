@@ -243,6 +243,12 @@ Create these sections:
 
 Rules:
 
+- Match conditions logically and realistically to the exact symptoms reported.
+- For general symptoms like Fever and Body Pain, identify them as Flu (Influenza), Viral Fever, or Common Cold. NEVER jump to unrelated specific conditions like Urinary Tract Infection, Arthritis, or organ failure unless hallmark symptoms (e.g. stomach pain, joint swelling, chest pain) are explicitly selected!
+- Assess Risk Level strictly based on severity:
+  * LOW: 1-2 mild symptoms (Common Cold, mild viral fever, minor headache, fatigue) with no breathing difficulty or chest pain.
+  * MEDIUM: 3-4 symptoms or marked dehydration, vomiting, diarrhea, or moderate infection.
+  * HIGH: Emergency red flags (Chest Pain, Shortness of Breath, intense acute pain) or 5+ combined severe symptoms.
 - Mention only possible conditions.
 - Never confirm diagnosis.
 - Never prescribe medicines.
