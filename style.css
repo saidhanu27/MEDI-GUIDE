@@ -64,15 +64,15 @@ body::before{
     background-size:cover;
     background-position:center;
     background-repeat:no-repeat;
-    opacity:.25;
+    opacity:.12;
 }
 
 body.dark-mode::before{
-    opacity:.22;
+    opacity:.10;
 }
 
 body:not(.dark-mode)::before{
-    opacity:.35;
+    opacity:.16;
     mix-blend-mode:multiply;
 }
 

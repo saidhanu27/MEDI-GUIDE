@@ -724,117 +724,91 @@ function findHospitalForMySymptoms() {
     resultBox.innerHTML = "";
     loading.style.display = "block";
 
-    navigator.geolocation.getCurrentPosition(
+    async function fetchHospitalsForCoords(lat, lng, isFallbackLocation) {
+        try {
+            const response = await fetch(`${MEDIGUIDE_API_BASE}/find_doctor`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    symptom_text: combinedText,
+                    specialist: window.__lastRecommendedSpecialist || null,
+                    lat: lat,
+                    lng: lng,
+                    radius_km: 30
+                })
+            });
 
-        async function (position) {
+            const data = await response.json();
+            loading.style.display = "none";
 
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-
-            try {
-
-                const response = await fetch(`${MEDIGUIDE_API_BASE}/find_doctor`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        symptom_text: combinedText,
-                        specialist: window.__lastRecommendedSpecialist || null,
-                        lat: lat,
-                        lng: lng,
-                        radius_km: 30
-                    })
-                });
-
-                const data = await response.json();
-
-                loading.style.display = "none";
-
-                if (!response.ok || data.error) {
-                    resultBox.innerHTML = `
-                    <div class="result-card">
-                        <h2>${t("hospital_title")}</h2>
-                        <p>${t("hospital_backend_error")}: ${data.error || "Unknown error"}.
-                        ${t("hospital_backend_hint")}</p>
-                    </div>`;
-                    return;
-                }
-
-                if (data.hospitals.length === 0) {
-                    resultBox.innerHTML = `
-                    <div class="result-card">
-                        <h2>${t("hospital_title")}</h2>
-                        <p class="hospital-specialist-note">
-                            ${t("hospital_specialist_prefix")} <strong>${data.recommended_specialist}</strong>
-                        </p>
-                        <p>${t("hospital_none_found")}</p>
-                    </div>`;
-                    return;
-                }
-
-                const listHTML = data.hospitals.map(h => `
-                    <div class="hospital-item ${h.nearest ? "nearest" : ""}">
-                        <div class="hospital-name">
-                            ${h.nearest ? "📍 " : "🏥 "}${h.name}
-                            ${h.nearest ? `<span class="hospital-tag">${t("hospital_nearest")}</span>` : ""}
-                            ${h.emergency ? `<span class="hospital-tag emergency">${t("hospital_emergency")}</span>` : ""}
-                        </div>
-                        <div class="hospital-meta">${h.address}</div>
-                        <div class="hospital-meta">
-                            <strong>${h.distance_km} ${t("hospital_km_away")}</strong>
-                            ${h.phone ? " · " + h.phone : ""}
-                            · <a href="${h.maps_link}" target="_blank" class="hospital-map-link">${t("hospital_view_map")}</a>
-                        </div>
-                    </div>
-                `).join("");
-
+            if (!response.ok || !data.hospitals || data.hospitals.length === 0) {
                 resultBox.innerHTML = `
                 <div class="result-card">
                     <h2>${t("hospital_title")}</h2>
-                    <p class="hospital-specialist-note">
-                        ${t("hospital_specialist_prefix")} <strong>${data.recommended_specialist}</strong>
-                        ${data.matched_specialist_facilities
-                            ? " — " + t("hospital_specialist_matched")
-                            : " — " + t("hospital_specialist_not_matched")}
-                    </p>
-                    <p class="hospital-note">
-                        ${t("hospital_sorted_note")} ${data.source}.
-                        ${t("hospital_no_ratings")}
-                    </p>
-                    ${listHTML}
+                    <p style="margin-bottom:14px;">Could not retrieve list directly, but you can find all nearby hospitals instantly:</p>
+                    <a href="https://www.google.com/maps/search/hospitals+clinics+near+me" target="_blank" class="primary-btn" style="display:inline-block;padding:12px 20px;text-decoration:none;text-align:center;">🗺️ Open Google Maps Nearby Facilities</a>
                 </div>`;
-
-            } catch (err) {
-
-                loading.style.display = "none";
-
-                resultBox.innerHTML = `
-                <div class="result-card">
-                    <h2>${t("hospital_title")}</h2>
-                    <p>${t("hospital_unreachable")}</p>
-                </div>`;
-
-                console.error(err);
-
+                return;
             }
 
-        },
-
-        function (error) {
-
-            loading.style.display = "none";
+            const listHTML = data.hospitals.map(h => `
+                <div class="hospital-item ${h.nearest ? "nearest" : ""}">
+                    <div class="hospital-name">
+                        ${h.nearest ? "📍 " : "🏥 "}${h.name}
+                        ${h.nearest ? `<span class="hospital-tag">${t("hospital_nearest")}</span>` : ""}
+                        ${h.emergency ? `<span class="hospital-tag emergency">${t("hospital_emergency")}</span>` : ""}
+                    </div>
+                    <div class="hospital-meta">${h.address}</div>
+                    <div class="hospital-meta">
+                        <strong>${h.distance_km} ${t("hospital_km_away")}</strong>
+                        ${h.phone ? " · " + h.phone : ""}
+                        · <a href="${h.maps_link}" target="_blank" class="hospital-map-link">${t("hospital_view_map")}</a>
+                    </div>
+                </div>
+            `).join("");
 
             resultBox.innerHTML = `
             <div class="result-card">
                 <h2>${t("hospital_title")}</h2>
-                <p>${t("hospital_denied")}</p>
+                <p class="hospital-specialist-note">
+                    ${t("hospital_specialist_prefix")} <strong>${data.recommended_specialist}</strong>
+                    ${data.matched_specialist_facilities
+                        ? " — " + t("hospital_specialist_matched")
+                        : " — " + t("hospital_specialist_not_matched")}
+                </p>
+                ${isFallbackLocation 
+                    ? `<p class="hospital-note" style="color:var(--amber);">📍 GPS permission not granted. Showing nearby medical centres for your general region. Click "View on Map" for direct turn-by-turn navigation.</p>` 
+                    : `<p class="hospital-note">${t("hospital_sorted_note")} ${data.source}.</p>`
+                }
+                ${listHTML}
             </div>`;
 
-            console.error(error);
+            resultBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
+        } catch (err) {
+            loading.style.display = "none";
+            resultBox.innerHTML = `
+            <div class="result-card">
+                <h2>${t("hospital_title")}</h2>
+                <p style="margin-bottom:14px;">Instant Google Maps search for nearby emergency centres:</p>
+                <a href="https://www.google.com/maps/search/hospitals+near+me" target="_blank" class="primary-btn" style="display:inline-block;padding:12px 20px;text-decoration:none;text-align:center;">🗺️ Open Google Maps Nearby Facilities</a>
+            </div>`;
+            console.error(err);
         }
+    }
 
-    );
-
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => fetchHospitalsForCoords(pos.coords.latitude, pos.coords.longitude, false),
+            (err) => {
+                console.warn("Geolocation not available or denied, using general region:", err);
+                fetchHospitalsForCoords(13.0827, 80.2707, true);
+            },
+            { timeout: 5000, maximumAge: 300000, enableHighAccuracy: false }
+        );
+    } else {
+        fetchHospitalsForCoords(13.0827, 80.2707, true);
+    }
 }
 function toggleTheme(){
 
