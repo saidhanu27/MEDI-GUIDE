@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a1128"/>
+      <stop offset="100%" stop-color="#001e3d"/>
+    </linearGradient>
+    <linearGradient id="crossGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f2fe"/>
+      <stop offset="100%" stop-color="#4facfe"/>
+    </linearGradient>
+    <linearGradient id="pulseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff3366"/>
+      <stop offset="50%" stop-color="#ff0844"/>
+      <stop offset="100%" stop-color="#ffb199"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Squircle App Background -->
+  <rect x="24" y="24" width="464" height="464" rx="100" fill="url(#bgGrad)" stroke="#00f2fe" stroke-width="4" stroke-opacity="0.6"/>
+  
+  <!-- Glowing Backdrop Circle -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#00f2fe" stroke-width="2" stroke-opacity="0.2"/>
+
+  <!-- Medical Cross -->
+  <g fill="url(#crossGrad)" filter="url(#glow)">
+    <rect x="220" y="100" width="72" height="312" rx="20"/>
+    <rect x="100" y="220" width="312" height="72" rx="20"/>
+  </g>
+
+  <!-- ECG Heartbeat Vital Line crossing in front -->
+  <path d="M 120 256 L 195 256 L 220 180 L 256 340 L 290 210 L 315 256 L 392 256" 
+        fill="none" 
+        stroke="url(#pulseGrad)" 
+        stroke-width="12" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        filter="url(#glow)" />
+</svg>

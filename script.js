@@ -829,3 +829,87 @@ function toggleTheme(){
     }
 
 }
+
+// =========================
+// PWA Service Worker & App Installation
+// =========================
+let deferredInstallPrompt = null;
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then((reg) => {
+                console.log('[PWA] Service Worker registered:', reg.scope);
+            })
+            .catch((err) => {
+                console.warn('[PWA] Service Worker registration failed:', err);
+            });
+    });
+}
+
+// Catch Android/Chrome/Edge native install prompt
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const navBtn = document.getElementById('installAppNavBtn');
+    if (navBtn) {
+        navBtn.classList.add('pulse-highlight');
+    }
+    const pwaBtnText = document.getElementById('pwaBtnText');
+    if (pwaBtnText) {
+        pwaBtnText.innerText = "Install to Device Now";
+    }
+    console.log('[PWA] beforeinstallprompt event captured');
+});
+
+window.addEventListener('appinstalled', () => {
+    console.log('[PWA] MediGuide AI installed as App!');
+    deferredInstallPrompt = null;
+    const navBtn = document.getElementById('installAppNavBtn');
+    if (navBtn) {
+        navBtn.innerHTML = "✅ App Installed";
+        navBtn.classList.remove('pulse-highlight');
+    }
+    closeDownloadModal();
+    alert("🎉 MediGuide AI App has been installed! You can now launch it directly from your Home Screen or Desktop.");
+});
+
+function openDownloadModal() {
+    const modal = document.getElementById('downloadModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        // Detect iOS
+        const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const iosGuide = document.getElementById('iosInstallGuide');
+        const pwaBtn = document.getElementById('pwaInstallActionBtn');
+        if (isIos && iosGuide) {
+            iosGuide.style.display = 'block';
+            if (pwaBtn) pwaBtn.style.display = 'none';
+        }
+    }
+}
+
+function closeDownloadModal() {
+    const modal = document.getElementById('downloadModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+async function triggerPwaInstall() {
+    if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+            console.log('[PWA] User accepted the install prompt');
+            closeDownloadModal();
+        } else {
+            console.log('[PWA] User dismissed the install prompt');
+        }
+        deferredInstallPrompt = null;
+    } else {
+        // Fallback instructions if prompt not supported or already triggered
+        alert("📲 How to Install MediGuide AI:\n\n• On Chrome / Android: Tap the 3 dots (⋮) in the top-right corner and select 'Install app' or 'Add to Home screen'.\n• On iPhone (Safari): Tap the Share button (📤) at the bottom and select 'Add to Home Screen' (➕).\n• On PC (Chrome/Edge): Click the Install icon (⊕) in the browser address bar.");
+    }
+}

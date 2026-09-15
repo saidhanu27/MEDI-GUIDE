@@ -13,6 +13,7 @@ const TRANSLATIONS = {
         nav_home: "Home",
         nav_checker: "Symptom Checker",
         nav_about: "About",
+        install_app: "Install App",
         theme_dark: "Dark Mode",
         theme_light: "Light Mode",
         hero_title: "AI Powered Health Assistant",

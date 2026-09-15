@@ -1443,3 +1443,300 @@ img{
         text-overflow: ellipsis;
     }
 }
+
+/* ========================================================
+   Install & Download App Styles
+   ======================================================== */
+.install-btn {
+    background: linear-gradient(135deg, #00e5ff, #0077ff);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 3px 12px rgba(0, 229, 255, 0.35);
+    transition: all 0.25s ease;
+}
+
+.install-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 229, 255, 0.55);
+}
+
+.hero-download-btn {
+    background: linear-gradient(135deg, #ff0844 0%, #ff4e50 50%, #f9d423 100%);
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(255, 8, 68, 0.45);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.3px;
+}
+
+.hero-download-btn:hover {
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 8px 25px rgba(255, 8, 68, 0.65);
+}
+
+.pulse-highlight {
+    animation: installPulse 1.8s infinite;
+}
+
+@keyframes installPulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.7); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(4, 8, 20, 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.download-modal-box {
+    background: linear-gradient(145deg, #0e1628, #131c33);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    border-radius: 20px;
+    max-width: 680px;
+    width: 100%;
+    padding: 28px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 229, 255, 0.15);
+    position: relative;
+    color: #e2e8f0;
+    animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+@keyframes modalPop {
+    from { opacity: 0; transform: scale(0.92) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #cbd5e1;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.download-modal-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.download-modal-header h2 {
+    font-size: 22px;
+    margin: 10px 0 6px;
+    color: #00f2fe;
+}
+
+.download-modal-header p {
+    font-size: 13px;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.download-options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.download-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.download-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(0, 229, 255, 0.4);
+}
+
+.pwa-card {
+    border-color: rgba(0, 229, 255, 0.3);
+    background: linear-gradient(180deg, rgba(0, 229, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.card-badge {
+    position: absolute;
+    top: -9px;
+    right: 14px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #00e5ff;
+    color: #040814;
+    letter-spacing: 0.5px;
+}
+
+.zip-card .card-badge {
+    background: #8b5cf6;
+    color: #fff;
+}
+
+.card-icon {
+    font-size: 36px;
+    margin-bottom: 8px;
+}
+
+.download-card h3 {
+    font-size: 16px;
+    margin: 0 0 6px;
+    color: #f8fafc;
+}
+
+.download-card p {
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.45;
+    margin-bottom: 14px;
+    flex-grow: 1;
+}
+
+.download-action-btn {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.download-action-btn.primary {
+    background: linear-gradient(135deg, #00e5ff, #0077ff);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 229, 255, 0.35);
+}
+
+.download-action-btn.primary:hover {
+    box-shadow: 0 6px 20px rgba(0, 229, 255, 0.55);
+}
+
+.download-action-btn.secondary {
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.5);
+    color: #c4b5fd;
+}
+
+.download-action-btn.secondary:hover {
+    background: rgba(139, 92, 246, 0.35);
+    color: #fff;
+}
+
+.zip-hint {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 8px;
+}
+
+.zip-hint code {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1px 4px;
+    border-radius: 4px;
+    color: #00e5ff;
+}
+
+.ios-guide {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 12px;
+    color: #f1f5f9;
+    margin-top: 8px;
+    line-height: 1.4;
+}
+
+.download-instructions {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+    padding: 14px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.download-instructions h4 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: #38bdf8;
+}
+
+.download-instructions ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.6;
+}
+
+.download-instructions li strong {
+    color: #e2e8f0;
+}
+
+@media (max-width: 640px) {
+    .download-options-grid {
+        grid-template-columns: 1fr;
+    }
+    .download-modal-box {
+        padding: 20px 16px;
+    }
+}

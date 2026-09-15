@@ -16,7 +16,9 @@ Then open:          http://127.0.0.1:5000
 """
 
 import os
-from flask import Flask, request, jsonify, send_from_directory
+import io
+import zipfile
+from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 import pickle
 import numpy as np
@@ -38,6 +40,49 @@ database.init_db()
 @app.route("/")
 def home():
     return send_from_directory(FRONTEND_DIR, "index.html")
+
+
+@app.route("/sw.js")
+def serve_sw():
+    """Explicit route for Service Worker with correct MIME type and scope header."""
+    response = send_from_directory(FRONTEND_DIR, "sw.js")
+    response.headers["Content-Type"] = "application/javascript"
+    response.headers["Service-Worker-Allowed"] = "/"
+    return response
+
+
+@app.route("/manifest.json")
+def serve_manifest():
+    """Explicit route for Web App Manifest with correct MIME type."""
+    response = send_from_directory(FRONTEND_DIR, "manifest.json")
+    response.headers["Content-Type"] = "application/manifest+json"
+    return response
+
+
+@app.route("/download_app_zip")
+def download_app_zip():
+    """Packages the application files into a clean downloadable ZIP for offline / desktop use."""
+    memory_file = io.BytesIO()
+    EXCLUDED_NAMES = {'.git', '__pycache__', 'cloudflared.exe', '.DS_Store'}
+    EXCLUDED_EXTS = {'.pyc', '.pyo'}
+
+    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for root, dirs, files in os.walk(FRONTEND_DIR):
+            dirs[:] = [d for d in dirs if d not in EXCLUDED_NAMES]
+            for file in files:
+                if file in EXCLUDED_NAMES or any(file.endswith(ext) for ext in EXCLUDED_EXTS):
+                    continue
+                file_path = os.path.join(root, file)
+                archive_name = os.path.relpath(file_path, FRONTEND_DIR)
+                zf.write(file_path, os.path.join("MediGuide-AI", archive_name))
+
+    memory_file.seek(0)
+    return send_file(
+        memory_file,
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name="MediGuide-AI-App.zip"
+    )
 
 
 @app.route("/<path:filename>")
