@@ -171,9 +171,10 @@ SYMPTOMS = saved["symptoms"]      # fixed feature order
 CLASSES = saved["classes"]
 
 # Basic disease -> risk level mapping (used alongside model confidence)
-HIGH_RISK_DISEASES = {"Dengue", "Malaria", "Heart Related Issue", "COVID-19", "Typhoid"}
+HIGH_RISK_DISEASES = {"Dengue", "Malaria", "Heart Related Issue", "COVID-19", "Typhoid", "Pneumonia", "Hypertension", "Diabetes Complications"}
 MEDIUM_RISK_DISEASES = {"Flu", "Food Poisoning", "Gastritis", "Asthma", "Bronchitis",
-                         "Chickenpox", "Urinary Tract Infection", "Allergic Reaction"}
+                         "Chickenpox", "Urinary Tract Infection", "Allergic Reaction",
+                         "Gastroenteritis", "Jaundice", "Anemia", "Vertigo"}
 
 # Disease -> recommended specialist doctor / department.
 # Used to tell the person WHICH kind of doctor/hospital department to look
@@ -197,6 +198,14 @@ DISEASE_TO_SPECIALIST = {
     "Arthritis":                "Orthopedic / Rheumatologist",
     "Bronchitis":               "Pulmonologist",
     "Allergic Reaction":        "Allergist / Dermatologist",
+    "Pneumonia":                "Pulmonologist",
+    "Hypertension":             "Cardiologist",
+    "Diabetes Complications":   "Endocrinologist",
+    "Gastroenteritis":          "Gastroenterologist",
+    "Jaundice":                 "Gastroenterologist",
+    "Tonsillitis":              "ENT Specialist",
+    "Anemia":                   "General Physician",
+    "Vertigo":                  "ENT Specialist",
 }
 
 # Map each specialist to OpenStreetMap healthcare:speciality tag values

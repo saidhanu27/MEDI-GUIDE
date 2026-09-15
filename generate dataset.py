@@ -155,7 +155,62 @@ DISEASE_PROFILES = {
         "Sore Throat": 0.2, "Skin Rash": 0.8, "Joint Pain": 0.05,
         "Diarrhea": 0.1, "Loss of Appetite": 0.1
     },
-
+    "Hypertension": {
+        "Fever": 0.05, "Headache": 0.85, "Cough": 0.05, "Body Pain": 0.3,
+        "Vomiting": 0.15, "Stomach Pain": 0.05, "Chest Pain": 0.45,
+        "Shortness of Breath": 0.4, "Fatigue": 0.65, "Dizziness": 0.8,
+        "Sore Throat": 0.02, "Skin Rash": 0.01, "Joint Pain": 0.1,
+        "Diarrhea": 0.02, "Loss of Appetite": 0.2
+    },
+    "Pneumonia": {
+        "Fever": 0.92, "Headache": 0.45, "Cough": 0.95, "Body Pain": 0.6,
+        "Vomiting": 0.15, "Stomach Pain": 0.1, "Chest Pain": 0.65,
+        "Shortness of Breath": 0.85, "Fatigue": 0.85, "Dizziness": 0.25,
+        "Sore Throat": 0.3, "Skin Rash": 0.02, "Joint Pain": 0.2,
+        "Diarrhea": 0.05, "Loss of Appetite": 0.65
+    },
+    "Anemia": {
+        "Fever": 0.05, "Headache": 0.6, "Cough": 0.05, "Body Pain": 0.35,
+        "Vomiting": 0.05, "Stomach Pain": 0.05, "Chest Pain": 0.25,
+        "Shortness of Breath": 0.65, "Fatigue": 0.95, "Dizziness": 0.85,
+        "Sore Throat": 0.02, "Skin Rash": 0.02, "Joint Pain": 0.15,
+        "Diarrhea": 0.02, "Loss of Appetite": 0.55
+    },
+    "Diabetes Complications": {
+        "Fever": 0.1, "Headache": 0.5, "Cough": 0.05, "Body Pain": 0.4,
+        "Vomiting": 0.2, "Stomach Pain": 0.2, "Chest Pain": 0.25,
+        "Shortness of Breath": 0.3, "Fatigue": 0.92, "Dizziness": 0.78,
+        "Sore Throat": 0.05, "Skin Rash": 0.15, "Joint Pain": 0.2,
+        "Diarrhea": 0.1, "Loss of Appetite": 0.4
+    },
+    "Gastroenteritis": {
+        "Fever": 0.6, "Headache": 0.3, "Cough": 0.05, "Body Pain": 0.45,
+        "Vomiting": 0.88, "Stomach Pain": 0.92, "Chest Pain": 0.05,
+        "Shortness of Breath": 0.05, "Fatigue": 0.75, "Dizziness": 0.4,
+        "Sore Throat": 0.05, "Skin Rash": 0.02, "Joint Pain": 0.1,
+        "Diarrhea": 0.95, "Loss of Appetite": 0.85
+    },
+    "Tonsillitis": {
+        "Fever": 0.8, "Headache": 0.5, "Cough": 0.35, "Body Pain": 0.4,
+        "Vomiting": 0.1, "Stomach Pain": 0.05, "Chest Pain": 0.05,
+        "Shortness of Breath": 0.1, "Fatigue": 0.6, "Dizziness": 0.15,
+        "Sore Throat": 0.98, "Skin Rash": 0.02, "Joint Pain": 0.1,
+        "Diarrhea": 0.02, "Loss of Appetite": 0.7
+    },
+    "Jaundice": {
+        "Fever": 0.5, "Headache": 0.35, "Cough": 0.05, "Body Pain": 0.45,
+        "Vomiting": 0.7, "Stomach Pain": 0.75, "Chest Pain": 0.05,
+        "Shortness of Breath": 0.1, "Fatigue": 0.9, "Dizziness": 0.4,
+        "Sore Throat": 0.02, "Skin Rash": 0.25, "Joint Pain": 0.2,
+        "Diarrhea": 0.35, "Loss of Appetite": 0.92
+    },
+    "Vertigo": {
+        "Fever": 0.05, "Headache": 0.6, "Cough": 0.02, "Body Pain": 0.15,
+        "Vomiting": 0.65, "Stomach Pain": 0.1, "Chest Pain": 0.05,
+        "Shortness of Breath": 0.05, "Fatigue": 0.5, "Dizziness": 0.98,
+        "Sore Throat": 0.02, "Skin Rash": 0.01, "Joint Pain": 0.05,
+        "Diarrhea": 0.05, "Loss of Appetite": 0.3
+    }
 }
 
 SAMPLES_PER_DISEASE = 1000

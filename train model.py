@@ -145,7 +145,7 @@ importances = sorted(
     key=lambda x: x[1], reverse=True
 )
 for name, score in importances:
-    bar = "█" * int(score * 100)
+    bar = "#" * int(score * 100)
     print(f"  {name:22s} {score:.3f}  {bar}")
 
 feat_df = pd.DataFrame(importances, columns=["Symptom", "Importance"])
