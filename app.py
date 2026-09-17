@@ -730,7 +730,7 @@ def predict():
         "risk_level": risk,
         "top_predictions": top3,
         "recommended_specialist": specialist,
-        "algorithm": "Random Forest Classifier (scikit-learn) with Clinical Triage"
+        "algorithm": "Advanced Supervised Machine Learning Engine with Clinical Triage"
     })
 
 

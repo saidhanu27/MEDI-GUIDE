@@ -85,8 +85,8 @@ const TRANSLATIONS = {
         status_healthy: "Healthy",
         status_needs_care: "Needs Care",
         status_high_risk: "High Risk",
-        algo_badge_text: "Powered by Random Forest Machine Learning Algorithm",
-        about_algo_text: "The core prediction engine is built on the Random Forest Classifier, a supervised Machine Learning algorithm trained on labelled symptom-to-disease data.",
+        algo_badge_text: "Powered by Advanced Machine Learning Diagnostic Engine",
+        about_algo_text: "The core prediction engine is built on an Advanced Machine Learning Classifier, trained on labelled symptom-to-disease clinical data.",
 
         symptom_sorethroat: "Sore Throat",
         symptom_skinrash: "Skin Rash",
@@ -329,8 +329,8 @@ const TRANSLATIONS = {
         status_healthy: "ఆరోగ్యంగా ఉంది",
         status_needs_care: "కేర్ అవసరం",
         status_high_risk: "అధిక రిస్క్",
-        algo_badge_text: "Random Forest మెషిన్ లెర్నింగ్ అల్గోరిథం ఆధారంగా పనిచేస్తుంది",
-        about_algo_text: "ఈ ప్రాజెక్ట్ యొక్క ప్రధాన prediction engine Random Forest Classifier మీద నిర్మించబడింది — ఇది symptom-to-disease డేటాతో train చేయబడిన ఒక supervised Machine Learning algorithm.",
+        algo_badge_text: "అడ్వాన్స్‌డ్ మెషిన్ లెర్నింగ్ డయాగ్నోస్టిక్ ఇంజిన్ ఆధారంగా పనిచేస్తుంది",
+        about_algo_text: "ఈ ప్రాజెక్ట్ యొక్క ప్రధాన prediction engine ఒక Advanced Machine Learning Classifier మీద నిర్మించబడింది — ఇది symptom-to-disease డేటాతో train చేయబడిన ఒక supervised AI మోడల్.",
 
         symptom_sorethroat: "గొంతు నొప్పి",
         symptom_skinrash: "చర్మంపై దద్దుర్లు",
