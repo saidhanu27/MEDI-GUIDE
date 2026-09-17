@@ -42,7 +42,7 @@ const TRANSLATIONS = {
         btn_reset: "Reset",
         btn_analyze: "Analyze Symptoms",
         loading_text: "Analyzing symptoms with AI...",
-        btn_download: "Download PDF",
+        btn_download: "Save Report (PDF)",
         btn_hospitals: "Nearby Hospitals",
         about_title: "About MediGuide AI",
         about_text: "MediGuide AI is an AI-powered symptom analysis system developed for educational purposes. It provides possible health conditions, general medicine information, food suggestions, and guidance on the type of doctor to consult. It is not a substitute for professional medical advice.",

@@ -92,10 +92,6 @@
                 🌙 <span data-i18n="theme_dark">Dark Mode</span>
             </button>
 
-            <button type="button" id="installAppNavBtn" class="install-btn" onclick="openDownloadModal()" title="Install or Download App">
-                📲 <span data-i18n="install_app">Install App</span>
-            </button>
-
             <button type="button" id="logoutBtn" onclick="handleLogout()" data-i18n="auth_logout_button">Logout</button>
 
         </div>
@@ -107,11 +103,6 @@
         <div class="algo-badge">
             <span class="algo-dot"></span>
             <span data-i18n="algo_badge_text">Powered by Random Forest Machine Learning Algorithm</span>
-        </div>
-        <div class="hero-cta-row" style="margin-top: 18px;">
-            <button type="button" class="hero-download-btn" onclick="openDownloadModal()">
-                📲 Download / Install App
-            </button>
         </div>
     </div>
 </header>
@@ -207,7 +198,7 @@
 <div class="action-toolbar">
 
     <button type="button" class="toolbar-btn secondary" onclick="downloadPDF()">
-        <span class="btn-icon">📄</span><span data-i18n="btn_download">Download PDF</span>
+        <span class="btn-icon">📄</span><span data-i18n="btn_download">Save Report (PDF)</span>
     </button>
 
     <button type="button" class="toolbar-btn secondary" onclick="findHospitalForMySymptoms()">
@@ -256,57 +247,6 @@ It is not a substitute for professional medical advice.
 The core prediction engine is built on the Random Forest Classifier,
 a supervised Machine Learning algorithm trained on labelled symptom-to-disease data.
 </p>
-
-<!-- Install & Download App Modal -->
-<div id="downloadModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeDownloadModal()">
-    <div class="modal-box download-modal-box">
-        <button type="button" class="modal-close-btn" onclick="closeDownloadModal()" title="Close">✕</button>
-        <div class="download-modal-header">
-            <div class="app-icon-preview">
-                <img src="/assets/icon-192.png" alt="MediGuide Icon" width="68" height="68">
-            </div>
-            <h2>MediGuide AI Application</h2>
-            <p>Install directly to your device home screen or download the offline package.</p>
-        </div>
-
-        <div class="download-options-grid">
-            <!-- PWA Native Install Card -->
-            <div class="download-card pwa-card">
-                <div class="card-badge">RECOMMENDED</div>
-                <div class="card-icon">📱</div>
-                <h3>Install on Phone / Laptop</h3>
-                <p>One-tap install on Android, iPhone, iPad, Windows, or Mac. Works fullscreen like a native app with quick launch.</p>
-                <button type="button" id="pwaInstallActionBtn" class="download-action-btn primary" onclick="triggerPwaInstall()">
-                    ⚡ <span id="pwaBtnText">Install to Home Screen</span>
-                </button>
-                <div id="iosInstallGuide" class="ios-guide" style="display:none;">
-                    <span>👉 On iPhone Safari: Tap Share (<strong>📤</strong>) &rarr; Select <strong>"Add to Home Screen" (➕)</strong></span>
-                </div>
-            </div>
-
-            <!-- Offline ZIP Package Card -->
-            <div class="download-card zip-card">
-                <div class="card-badge">OFFLINE BUNDLE</div>
-                <div class="card-icon">💻</div>
-                <h3>Download Full ZIP Package</h3>
-                <p>Download the complete project bundle with Python ML model, database, and 1-click launcher for Windows.</p>
-                <a href="/download_app_zip" class="download-action-btn secondary" download="MediGuide-AI-App.zip">
-                    ⬇️ Download ZIP (Complete App)
-                </a>
-                <span class="zip-hint">Includes <code>start_app.bat</code> for instant 1-click launch!</span>
-            </div>
-        </div>
-
-        <div class="download-instructions">
-            <h4>💡 How to Install on Any Device:</h4>
-            <ul>
-                <li><strong>📱 Android Phones:</strong> Tap "Install to Home Screen" above or open Chrome menu (⋮) &rarr; "Install app" / "Add to Home screen".</li>
-                <li><strong>🍏 iPhones / iPads:</strong> In Safari, tap the Share icon (📤) at bottom &rarr; tap "Add to Home Screen".</li>
-                <li><strong>💻 Windows / Mac:</strong> In Chrome or Edge, click the Install icon (⊕) in the URL address bar or click "Install" above.</li>
-            </ul>
-        </div>
-    </div>
-</div>
 
 <footer>
 

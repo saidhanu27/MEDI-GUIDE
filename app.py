@@ -555,15 +555,12 @@ def find_doctor():
     lat = data.get("lat")
     lng = data.get("lng")
     radius_km = data.get("radius_km", 30)
-
-    if not symptom_text and not given_specialist:
-        return jsonify({"error": "Please describe your symptom."}), 400
-
-    # Default to center coordinates if not provided
     if lat is None or lng is None:
         lat, lng = 13.0827, 80.2707
 
-    if given_specialist and given_specialist in SPECIALIST_TO_OSM_SPECIALITY:
+    if not symptom_text and not given_specialist:
+        resolved_specialist = "General Physician"
+    elif given_specialist and given_specialist in SPECIALIST_TO_OSM_SPECIALITY:
         resolved_specialist = given_specialist
     else:
         resolved_specialist = resolve_specialist_from_text(symptom_text)
