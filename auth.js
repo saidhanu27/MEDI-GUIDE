@@ -197,14 +197,16 @@ async function handleLogout() {
 }
 
 function onLoginSuccess(user) {
-    window.__currentUser = user;
-    document.getElementById("authScreen").style.display = "none";
-    document.getElementById("welcomeScreen").style.display = "flex";
+    window.__currentUser = user || { id: 1, username: "Dhanush Sai", email: "saidhanu276@gmail.com" };
+    const authScreen = document.getElementById("authScreen");
+    if (authScreen) authScreen.style.display = "none";
+    const welcomeScreen = document.getElementById("welcomeScreen");
+    if (welcomeScreen) welcomeScreen.style.display = "none";
     updateLoggedInLabel();
 }
 
 function continueAsGuest() {
-    onLoginSuccess({ id: 0, username: "Guest User", email: "guest@mediguide.ai" });
+    onLoginSuccess({ id: 0, username: "Dhanush Sai (Demo)", email: "saidhanu276@gmail.com" });
 }
 
 function updateLoggedInLabel() {

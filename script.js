@@ -524,45 +524,46 @@ with your actual assessed health score number.
 
     try {
         if (typeof API_KEY !== "undefined" && API_KEY && !API_KEY.includes("YOUR_KEY") && API_KEY.length > 20) {
-            const response = await fetch(
-                "https://api.groq.com/openai/v1/chat/completions",
-                {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${API_KEY}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        model: "llama-3.3-70b-versatile",
-                        messages: [
-                            { role: "system", content: "You are a helpful medical AI assistant." },
-                            { role: "user", content: prompt }
-                        ],
-                        temperature: 0.3,
-                        max_tokens: 2200
-                    })
-                }
-            );
+            try {
+                const response = await fetch(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${API_KEY}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            model: "llama-3.3-70b-versatile",
+                            messages: [
+                                { role: "system", content: "You are a helpful medical AI assistant." },
+                                { role: "user", content: prompt }
+                            ],
+                            temperature: 0.3,
+                            max_tokens: 2200
+                        })
+                    }
+                );
 
-            if (response.ok) {
-                const data = await response.json();
-                if (data.choices && data.choices[0] && data.choices[0].message) {
-                    aiTextRaw = data.choices[0].message.content;
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.choices && data.choices[0] && data.choices[0].message) {
+                        aiTextRaw = data.choices[0].message.content;
+                    }
+                } else {
+                    console.warn("External AI returned status " + response.status + ". Using clinical intelligence engine.");
                 }
-            } else {
-                console.warn("External AI returned status " + response.status + ". Using clinical intelligence engine.");
+            } catch (apiError) {
+                console.warn("External AI unreachable. Using clinical intelligence engine:", apiError);
             }
         }
-    } catch (apiError) {
-        console.warn("External AI unreachable. Using clinical intelligence engine:", apiError);
-    }
 
-    if (!aiTextRaw) {
-        aiTextRaw = generateLocalClinicalReport(patientName, age, gender, symptoms, window.__mlDataForHistory || null, currentLanguage);
-    }
+        if (!aiTextRaw) {
+            aiTextRaw = generateLocalClinicalReport(patientName, age, gender, symptoms, window.__mlDataForHistory || null, currentLanguage);
+        }
 
-    loading.style.display = "none";
-    const aiText = wrapAiSectionsForPrint(aiTextRaw);
+        loading.style.display = "none";
+        const aiText = wrapAiSectionsForPrint(aiTextRaw);
 
         // ---------- Risk & Health Score ----------
         // Read from the hidden English marker the AI appends at the end,
