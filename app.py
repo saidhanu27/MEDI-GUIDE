@@ -302,7 +302,7 @@ SPECIALIST_TO_NAME_KEYWORDS = {
 # =========================================================
 # Free-text symptom -> specialist keyword map
 # (used by /find_doctor, where the person can type ANY symptom,
-# not just the 15 checkboxes used by the ML model)
+# not just the 15 checkboxes used by the diagnostic model)
 # =========================================================
 SYMPTOM_TEXT_TO_SPECIALIST = [
     # (list of keywords to look for in the free text, specialist to recommend)
@@ -730,7 +730,7 @@ def predict():
         "risk_level": risk,
         "top_predictions": top3,
         "recommended_specialist": specialist,
-        "algorithm": "Advanced Supervised Machine Learning Engine with Clinical Triage"
+        "system": "Clinical Triage & Health Assessment Engine"
     })
 
 

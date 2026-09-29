@@ -5,31 +5,39 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap');
 
 :root{
-    --bg: #f4f6fb;
-    --bg-alt: #e9edf6;
-    --glass: rgba(0,0,0,.03);
-    --glass-border: rgba(0,0,0,.09);
-    --cyan: #0090a8;
-    --violet: #6d3ee0;
-    --green: #00946a;
-    --amber: #b47900;
-    --red: #d10038;
-    --text: #10131c;
-    --text-dim: #4b5468;
+    --bg: #f8fafc;
+    --bg-alt: #ffffff;
+    --card-bg: #ffffff;
+    --glass: #ffffff;
+    --glass-border: #e2e8f0;
+    --input-bg: #f8fafc;
+    --input-border: #cbd5e1;
+    --cyan: #0284c7;
+    --violet: #6366f1;
+    --green: #059669;
+    --amber: #d97706;
+    --red: #dc2626;
+    --text: #0f172a;
+    --text-dim: #475569;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 25px -5px rgba(0, 0, 0, 0.08);
 }
 
 body.dark-mode{
-    --bg: #080b14;
-    --bg-alt: #0d1220;
-    --glass: rgba(255,255,255,.045);
-    --glass-border: rgba(255,255,255,.09);
+    --bg: #090d16;
+    --bg-alt: #0f172a;
+    --card-bg: rgba(15, 23, 42, 0.88);
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --input-bg: rgba(30, 41, 59, 0.7);
+    --input-border: rgba(255, 255, 255, 0.16);
     --cyan: #00e5ff;
     --violet: #8b5cf6;
     --green: #00ffa3;
     --amber: #ffc857;
     --red: #ff3d68;
-    --text: #eaf0ff;
-    --text-dim: #8b93a7;
+    --text: #f8fafc;
+    --text-dim: #94a3b8;
+    --card-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 *{
@@ -409,12 +417,12 @@ nav ul li a:hover{
 .card{
     width:800px;
     max-width:95%;
-    background:var(--glass);
+    background:var(--card-bg);
     backdrop-filter:blur(20px);
     border:1px solid var(--glass-border);
     padding:34px;
     border-radius:22px;
-    box-shadow:0 0 0 1px rgba(255,255,255,.02) inset, 0 20px 60px rgba(0,0,0,.25);
+    box-shadow:var(--card-shadow);
 }
 
 .card h2{
@@ -422,6 +430,7 @@ nav ul li a:hover{
     font-size:19px;
     margin-bottom:16px;
     letter-spacing:.3px;
+    font-weight:700;
 }
 
 input,
@@ -431,8 +440,8 @@ textarea{
     padding:14px 16px;
     margin-top:10px;
     margin-bottom:20px;
-    background:var(--glass);
-    border:1px solid var(--glass-border);
+    background:var(--input-bg);
+    border:1.5px solid var(--input-border);
     border-radius:12px;
     font-size:15px;
     color:var(--text);
@@ -449,7 +458,13 @@ select:focus,
 textarea:focus{
     outline:none;
     border-color:var(--cyan);
-    box-shadow:0 0 0 3px rgba(0,229,255,.15);
+    box-shadow:0 0 0 3px rgba(2, 132, 199, .2);
+}
+
+body.dark-mode input:focus,
+body.dark-mode select:focus,
+body.dark-mode textarea:focus{
+    box-shadow:0 0 0 3px rgba(0, 229, 255, .2);
 }
 
 select option{
@@ -470,20 +485,28 @@ textarea{
 }
 
 .symptoms label{
-    background:var(--glass);
-    border:1px solid var(--glass-border);
+    background:var(--input-bg);
+    border:1.5px solid var(--glass-border);
     padding:12px 14px;
     border-radius:12px;
     cursor:pointer;
     transition:.25s;
     font-size:14px;
-    color:var(--text-dim);
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    user-select:none;
 }
 
 .symptoms label:hover{
     border-color:var(--cyan);
     color:var(--text);
-    background:rgba(0,229,255,.06);
+    background:rgba(2, 132, 199, .06);
+}
+
+body.dark-mode .symptoms label:hover{
+    background:rgba(0, 229, 255, .08);
 }
 
 button{
@@ -491,14 +514,19 @@ button{
     padding:15px;
     margin-bottom:18px;
     background:linear-gradient(90deg,var(--cyan),var(--violet));
-    color:#05070d;
-    font-weight:600;
+    color:#ffffff;
+    font-weight:700;
+    text-shadow:0 1px 2px rgba(0,0,0,0.25);
     border:none;
     border-radius:12px;
     font-size:16px;
     cursor:pointer;
     letter-spacing:.2px;
     transition:.25s;
+    box-shadow:0 4px 18px rgba(2, 132, 199, .25);
+}
+
+body.dark-mode button{
     box-shadow:0 0 20px rgba(0,229,255,.25);
 }
 
@@ -544,13 +572,13 @@ button:disabled{
 .dashboard-card,
 .risk-card,
 .result-card{
-    background:var(--glass);
+    background:var(--card-bg);
     backdrop-filter:blur(18px);
     border:1px solid var(--glass-border);
     padding:22px 25px;
     border-radius:18px;
     margin-bottom:20px;
-    box-shadow:0 12px 30px rgba(0,0,0,.2);
+    box-shadow:var(--card-shadow);
     page-break-inside:avoid;
     break-inside:avoid;
 }
@@ -606,7 +634,8 @@ button:disabled{
 }
 
 .result-card strong{
-    color:var(--red);
+    color:var(--text);
+    font-weight:700;
 }
 
 /* =========================================================
@@ -629,19 +658,28 @@ button:disabled{
     padding:16px;
     margin-bottom:18px;
     background:linear-gradient(90deg,var(--cyan),var(--violet));
-    color:#05070d;
+    color:#ffffff;
     font-weight:700;
+    text-shadow:0 1px 2px rgba(0,0,0,0.25);
     border:none;
     border-radius:14px;
     font-size:16px;
     cursor:pointer;
     letter-spacing:.2px;
     transition:.25s;
+    box-shadow:0 4px 20px rgba(2, 132, 199, .25);
+}
+
+body.dark-mode .primary-btn{
     box-shadow:0 4px 20px rgba(0,229,255,.3);
 }
 
 .primary-btn:hover{
     transform:translateY(-2px);
+    box-shadow:0 8px 28px rgba(2, 132, 199, .4);
+}
+
+body.dark-mode .primary-btn:hover{
     box-shadow:0 8px 28px rgba(0,229,255,.45);
 }
 
@@ -653,7 +691,7 @@ button:disabled{
     width:100%;
     padding:13px;
     margin-bottom:0;
-    background:var(--glass);
+    background:var(--card-bg);
     color:var(--text);
     font-weight:600;
     border:1px solid var(--glass-border);
@@ -661,13 +699,18 @@ button:disabled{
     font-size:14px;
     cursor:pointer;
     transition:.25s;
-    box-shadow:none;
+    box-shadow:var(--card-shadow);
 }
 
 .toolbar-btn:hover{
     border-color:var(--cyan);
-    background:rgba(0,229,255,.08);
+    background:rgba(2, 132, 199, .06);
     transform:translateY(-1px);
+    box-shadow:0 4px 14px rgba(2, 132, 199, .15);
+}
+
+body.dark-mode .toolbar-btn:hover{
+    background:rgba(0,229,255,.08);
     box-shadow:0 4px 14px rgba(0,229,255,.15);
 }
 
@@ -684,11 +727,12 @@ button:disabled{
     display:grid;
     grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
     gap:14px;
-    background:var(--glass);
+    background:var(--card-bg);
     border:1px solid var(--glass-border);
     border-radius:16px;
     padding:18px 22px;
     margin-bottom:20px;
+    box-shadow:var(--card-shadow);
 }
 
 .info-item{

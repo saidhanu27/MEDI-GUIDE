@@ -208,7 +208,7 @@ function generateLocalClinicalReport(patientName, age, gender, symptomsStr, mlDa
     };
 
     const profile = clinicalDB[disease] || clinicalDB["Flu"];
-    const condList = topPreds.map(p => `<li><strong>${p.disease}</strong> (${p.confidence}% ML confidence)</li>`).join("");
+    const condList = topPreds.map(p => `<li><strong>${p.disease}</strong> (${p.confidence}% confidence)</li>`).join("");
     const medList = profile.medicines.map(m => `<li>${m}</li>`).join("");
     const eatList = profile.foodEat.map(f => `<li>${f}</li>`).join("");
     const avoidList = profile.foodAvoid.map(f => `<li>${f}</li>`).join("");
@@ -312,7 +312,7 @@ ${homeList}
 
 
 // =========================================================
-// Built-in Machine Learning Diagnostic Engine (Infallible Fallback)
+// Built-in Intelligent Clinical Diagnostic Engine (Infallible Fallback)
 // Guarantees immediate, clinical-grade predictions under any network condition
 // =========================================================
 function predictLocally(selectedSymptoms) {
@@ -549,8 +549,7 @@ function predictLocally(selectedSymptoms) {
         confidence: confidence,
         risk_level: risk,
         top_predictions: top3,
-        recommended_specialist: specialist,
-        algorithm: "Advanced Machine Learning Diagnostic Engine"
+        recommended_specialist: specialist
     };
 }
 
@@ -604,7 +603,7 @@ async function analyzeSymptoms(event) {
     analyzeBtn.innerHTML = "⏳ " + t("loading_text");
 
     // ---------------------------------------------------------
-    // STEP 1: Call Machine Learning Diagnostic Engine
+    // STEP 1: Call Intelligent Diagnostic Engine
     // ---------------------------------------------------------
     let mlHTML = "";
     let mlData = null;
@@ -622,7 +621,7 @@ async function analyzeSymptoms(event) {
         }
 
     } catch (mlError) {
-        console.warn("Backend ML endpoint unreachable, switching seamlessly to local ML engine:", mlError);
+        console.warn("Backend diagnostic endpoint unreachable, switching seamlessly to local engine:", mlError);
     }
 
     // Infallible fallback: If network was interrupted or server unreachable,
@@ -635,12 +634,9 @@ async function analyzeSymptoms(event) {
         mlData.risk_level === "High" ? "high" :
         mlData.risk_level === "Medium" ? "medium" : "low";
 
-    const algoDisplayName = mlData.algorithm || "Advanced Machine Learning Diagnostic Engine";
-
     mlHTML = `
     <div class="result-card ml-card">
         <h2>${t("ml_title")}</h2>
-        <p><strong>${t("ml_algorithm")}:</strong> ${algoDisplayName}</p>
         <p><strong>${t("ml_most_likely")}:</strong> ${mlData.predicted_disease}
            (${mlData.confidence}% ${t("ml_confidence")})</p>
         <p><strong>${t("ml_risk")}:</strong>
@@ -1330,16 +1326,30 @@ function findHospitalForMySymptoms() {
 function toggleTheme(){
 
     document.body.classList.toggle("dark-mode");
-
+    const isDark = document.body.classList.contains("dark-mode");
     const btn = document.getElementById("themeBtn");
 
-    if(document.body.classList.contains("dark-mode")){
-        btn.innerHTML = "☀️ " + t("theme_light");
-    }else{
-        btn.innerHTML = "🌙 " + t("theme_dark");
+    if (btn) {
+        btn.innerHTML = (isDark ? "☀️ " : "🌙 ") + (isDark ? t("theme_light") : t("theme_dark"));
     }
 
+    try {
+        localStorage.setItem("mediguide_theme", isDark ? "dark" : "light");
+    } catch (e) {}
+
 }
+
+// Restore saved theme on page load immediately
+(function initSavedTheme(){
+    try {
+        const saved = localStorage.getItem("mediguide_theme");
+        if (saved === "dark") {
+            document.body.classList.add("dark-mode");
+        } else if (saved === "light") {
+            document.body.classList.remove("dark-mode");
+        }
+    } catch (e) {}
+})();
 
 // =========================
 // PWA Service Worker & App Installation
