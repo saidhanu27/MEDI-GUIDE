@@ -1469,10 +1469,10 @@ async function saveCurrentAnalysisToHistory(entry) {
         created_at: new Date().toISOString()
     };
 
-    // 1. Always save locally immediately
+    // 1. Always save locally immediately (capped at latest 5)
     const local = getLocalHistory();
     local.unshift(newEntry);
-    if (local.length > 30) local.length = 30;
+    if (local.length > 5) local.length = 5;
     saveLocalHistory(local);
 
     // 2. Try to sync to backend database if session/server active
@@ -1521,15 +1521,17 @@ async function loadHistory() {
     });
 
     combined.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-    saveLocalHistory(combined);
-    renderHistoryList(combined);
+    const top5 = combined.slice(0, 5);
+    saveLocalHistory(top5);
+    renderHistoryList(top5);
 }
 
 function renderHistoryList(items) {
     const historyList = document.getElementById("historyList");
     if (!historyList) return;
 
-    const list = items || getLocalHistory();
+    const rawList = items || getLocalHistory();
+    const list = rawList.slice(0, 5);
 
     if (!list || list.length === 0) {
         historyList.innerHTML = `
@@ -1593,7 +1595,7 @@ function renderHistoryList(items) {
 
     historyList.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
-            <div style="font-size:14px; font-weight:600; color:var(--text);">Total Records: <strong style="color:var(--cyan);">${list.length}</strong></div>
+            <div style="font-size:14px; font-weight:600; color:var(--text);">Recent Checks: <strong style="color:var(--cyan);">${list.length} / 5</strong></div>
             <button type="button" onclick="clearAllHistory()" style="width:auto; padding:6px 14px; font-size:12px; background:rgba(220,38,38,0.1); color:var(--red); border:1px solid rgba(220,38,38,0.3); border-radius:8px; cursor:pointer; font-weight:600; box-shadow:none; margin:0;">
                 🗑️ Clear All History
             </button>

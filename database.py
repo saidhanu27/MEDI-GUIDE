@@ -219,7 +219,7 @@ def add_history_entry(user_id, patient_name, age, gender, symptoms,
     conn.close()
 
 
-def get_history_for_user(user_id, limit=20):
+def get_history_for_user(user_id, limit=5):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
