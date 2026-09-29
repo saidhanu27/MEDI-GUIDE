@@ -1434,3 +1434,231 @@ async function triggerPwaInstall() {
         alert("📲 How to Install MediGuide AI:\n\n• On Chrome / Android: Tap the 3 dots (⋮) in the top-right corner and select 'Install app' or 'Add to Home screen'.\n• On iPhone (Safari): Tap the Share button (📤) at the bottom and select 'Add to Home Screen' (➕).\n• On PC (Chrome/Edge): Click the Install icon (⊕) in the browser address bar.");
     }
 }
+
+// =========================================================
+// History Management (Symptoms Consultation History)
+// =========================================================
+
+const HISTORY_STORAGE_KEY = "mediguide_symptoms_history";
+
+function getLocalHistory() {
+    try {
+        const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveLocalHistory(entries) {
+    try {
+        localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(entries));
+    } catch (e) {}
+}
+
+async function saveCurrentAnalysisToHistory(entry) {
+    const newEntry = {
+        id: "hist_" + Date.now(),
+        patient_name: entry.patient_name || "Patient",
+        age: entry.age || "-",
+        gender: entry.gender || "-",
+        symptoms: entry.symptoms || "",
+        predicted_disease: entry.predicted_disease || "General Assessment",
+        confidence: entry.confidence || 0,
+        risk_level: entry.risk_level || "Low",
+        health_score: entry.health_score || 80,
+        created_at: new Date().toISOString()
+    };
+
+    // 1. Always save locally immediately
+    const local = getLocalHistory();
+    local.unshift(newEntry);
+    if (local.length > 30) local.length = 30;
+    saveLocalHistory(local);
+
+    // 2. Try to sync to backend database if session/server active
+    try {
+        await fetch(`${MEDIGUIDE_API_BASE}/save_history`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newEntry)
+        });
+    } catch (e) {
+        // Silent fallback
+    }
+
+    // 3. Update the history view immediately
+    renderHistoryList(local);
+}
+
+async function loadHistory() {
+    const historyList = document.getElementById("historyList");
+    if (!historyList) return;
+
+    let serverHistory = [];
+    try {
+        const res = await fetch(`${MEDIGUIDE_API_BASE}/get_history`);
+        if (res.ok) {
+            const data = await res.json();
+            if (data && data.history) {
+                serverHistory = data.history;
+            }
+        }
+    } catch (e) {
+        // Server fetch optional
+    }
+
+    const localHistory = getLocalHistory();
+    const combined = [...localHistory];
+
+    serverHistory.forEach(sItem => {
+        const exists = combined.some(cItem => 
+            (cItem.created_at && sItem.created_at && cItem.created_at.slice(0, 16) === sItem.created_at.slice(0, 16)) ||
+            (cItem.symptoms === sItem.symptoms && cItem.predicted_disease === sItem.predicted_disease)
+        );
+        if (!exists) {
+            combined.push(sItem);
+        }
+    });
+
+    combined.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    saveLocalHistory(combined);
+    renderHistoryList(combined);
+}
+
+function renderHistoryList(items) {
+    const historyList = document.getElementById("historyList");
+    if (!historyList) return;
+
+    const list = items || getLocalHistory();
+
+    if (!list || list.length === 0) {
+        historyList.innerHTML = `
+            <div style="text-align:center; padding:36px 20px; color:var(--text-dim);">
+                <div style="font-size:36px; margin-bottom:10px;">📋</div>
+                <h3 style="font-size:16px; margin-bottom:6px; color:var(--text);">${t("history_empty")}</h3>
+                <p style="font-size:13px; max-width:400px; margin:0 auto 16px;">Select symptoms in the checker above and click "Analyze Symptoms" — your consultations will be recorded here.</p>
+                <a href="#checker" style="display:inline-block; padding:8px 18px; border-radius:10px; background:var(--cyan); color:#ffffff; font-weight:600; font-size:13px; text-decoration:none;">Go to Symptom Checker &rarr;</a>
+            </div>
+        `;
+        return;
+    }
+
+    const cardsHTML = list.map((item, index) => {
+        const dateStr = item.created_at ? new Date(item.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : "Recent Check";
+        const riskClass = (item.risk_level === "High") ? "high" : (item.risk_level === "Medium") ? "medium" : "low";
+
+        // Parse symptoms into distinct pill tags
+        const symptomsArr = (item.symptoms || "").split(",").map(s => s.trim()).filter(Boolean);
+        const tagsHTML = symptomsArr.length > 0 
+            ? symptomsArr.map(s => `<span class="history-symptom-tag">🔹 ${s}</span>`).join("")
+            : `<span style="color:var(--text-dim); font-size:13px;">No specific symptoms recorded</span>`;
+
+        return `
+        <div class="history-item" id="hist_card_${index}">
+            <div class="history-item-header">
+                <div class="history-patient-title">
+                    👤 ${item.patient_name || "Patient"} 
+                    <span style="font-size:13px; font-weight:500; color:var(--text-dim);">(${item.age || "-"} yrs, ${item.gender || "-"})</span>
+                </div>
+                <div class="history-date">📅 ${dateStr}</div>
+            </div>
+
+            <div class="history-condition">
+                🩺 <span>${item.predicted_disease || "General Assessment"}</span>
+                <span style="font-size:13px; font-weight:600; color:var(--text-dim);">(${item.confidence || 0}% confidence)</span>
+            </div>
+
+            <div class="history-symptoms-wrap">
+                <div class="history-symptoms-label">📋 Symptoms Checked:</div>
+                <div class="history-symptoms-tags">${tagsHTML}</div>
+            </div>
+
+            <div class="history-footer">
+                <div class="history-meta-badges">
+                    <span class="risk-badge ${riskClass}" style="padding:4px 14px; font-size:12px;">Risk: ${item.risk_level || "Low"}</span>
+                    <span style="font-size:13px; font-weight:600; color:var(--text); margin-left:6px;">❤️ Wellness Score: ${item.health_score || 80}/100</span>
+                </div>
+                <div class="history-actions">
+                    <button type="button" class="history-reload-btn" onclick="restoreSymptomsToCheck('${encodeURIComponent(JSON.stringify(item))}')">
+                        🔄 Re-Load Check
+                    </button>
+                    <button type="button" class="history-del-btn" onclick="deleteHistoryEntry(${index})">
+                        🗑️ Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+        `;
+    }).join("");
+
+    historyList.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+            <div style="font-size:14px; font-weight:600; color:var(--text);">Total Records: <strong style="color:var(--cyan);">${list.length}</strong></div>
+            <button type="button" onclick="clearAllHistory()" style="width:auto; padding:6px 14px; font-size:12px; background:rgba(220,38,38,0.1); color:var(--red); border:1px solid rgba(220,38,38,0.3); border-radius:8px; cursor:pointer; font-weight:600; box-shadow:none; margin:0;">
+                🗑️ Clear All History
+            </button>
+        </div>
+        ${cardsHTML}
+    `;
+}
+
+function restoreSymptomsToCheck(encodedItem) {
+    try {
+        const item = JSON.parse(decodeURIComponent(encodedItem));
+        if (item.patient_name) document.getElementById("patientName").value = item.patient_name;
+        if (item.age) document.getElementById("age").value = item.age;
+        if (item.gender) document.getElementById("gender").value = item.gender;
+
+        // Uncheck all symptoms first
+        document.querySelectorAll(".symptoms input").forEach(input => input.checked = false);
+
+        // Check matching symptoms
+        const symptomsArr = (item.symptoms || "").split(",").map(s => s.trim().toLowerCase());
+        document.querySelectorAll(".symptoms input").forEach(input => {
+            if (symptomsArr.includes(input.value.toLowerCase())) {
+                input.checked = true;
+            }
+        });
+
+        // Scroll smoothly to symptom checker
+        const checkerEl = document.getElementById("checker");
+        if (checkerEl) {
+            checkerEl.scrollIntoView({ behavior: "smooth" });
+        }
+    } catch (e) {
+        console.error("Error restoring history item:", e);
+    }
+}
+
+function deleteHistoryEntry(index) {
+    const list = getLocalHistory();
+    if (index >= 0 && index < list.length) {
+        list.splice(index, 1);
+        saveLocalHistory(list);
+        renderHistoryList(list);
+    }
+}
+
+function clearAllHistory() {
+    if (confirm("Are you sure you want to clear your symptoms check history?")) {
+        saveLocalHistory([]);
+        renderHistoryList([]);
+    }
+}
+
+function scrollToHistory() {
+    loadHistory();
+    const historySection = document.getElementById("history");
+    if (historySection) {
+        historySection.scrollIntoView({ behavior: "smooth" });
+    }
+}
+
+// Auto-load history on page start
+window.addEventListener("DOMContentLoaded", () => {
+    loadHistory();
+});
+setTimeout(() => {
+    loadHistory();
+}, 500);

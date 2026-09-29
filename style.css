@@ -221,20 +221,151 @@ header, section, footer{
 }
 
 .history-item{
-    background:var(--glass);
-    border:1px solid var(--glass-border);
-    border-radius:12px;
-    padding:14px 16px;
-    margin-bottom:10px;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    box-shadow: var(--card-shadow);
+    transition: transform .2s ease, border-color .2s ease;
+}
+
+.history-item:hover{
+    transform: translateY(-2px);
+    border-color: var(--cyan);
 }
 
 .history-item-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:6px;
-    font-size:15px;
-    color:var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.history-patient-title{
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.history-date{
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 500;
+}
+
+.history-condition{
+    font-size: 15px;
+    color: var(--cyan);
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.history-symptoms-wrap{
+    margin-bottom: 12px;
+}
+
+.history-symptoms-label{
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 6px;
+}
+
+.history-symptom-tag{
+    display: inline-block;
+    background: rgba(2, 132, 199, 0.08);
+    border: 1px solid rgba(2, 132, 199, 0.25);
+    color: var(--cyan);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 6px;
+    margin-bottom: 6px;
+}
+
+body.dark-mode .history-symptom-tag{
+    background: rgba(0, 229, 255, 0.12);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    color: var(--cyan);
+}
+
+.history-footer{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--glass-border);
+    padding-top: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.history-meta-badges{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.history-actions{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.history-reload-btn{
+    background: rgba(2, 132, 199, 0.1);
+    color: var(--cyan);
+    border: 1px solid rgba(2, 132, 199, 0.3);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s;
+    width: auto;
+    margin-bottom: 0;
+    box-shadow: none;
+}
+
+.history-reload-btn:hover{
+    background: var(--cyan);
+    color: #ffffff;
+    transform: none;
+    box-shadow: none;
+}
+
+.history-del-btn{
+    background: rgba(220, 38, 38, 0.1);
+    color: var(--red);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s;
+    width: auto;
+    margin-bottom: 0;
+    box-shadow: none;
+}
+
+.history-del-btn:hover{
+    background: var(--red);
+    color: #ffffff;
+    transform: none;
+    box-shadow: none;
 }
 
 .welcome-box{
@@ -644,7 +775,7 @@ button:disabled{
 
 .action-toolbar{
     display:grid;
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
     gap:12px;
     margin-bottom:14px;
 }
