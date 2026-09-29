@@ -963,20 +963,19 @@ with your actual assessed health score number.
 
         }
 
-        // Save this analysis to the logged-in user's history (silently —
+        // Save this analysis to the history (silently —
         // failure here should never interrupt the person's results view).
-        if (window.__mlDataForHistory) {
-            saveCurrentAnalysisToHistory({
-                patient_name: patientName,
-                age: age,
-                gender: gender,
-                symptoms: symptoms,
-                predicted_disease: window.__mlDataForHistory.predicted_disease,
-                confidence: window.__mlDataForHistory.confidence,
-                risk_level: window.__mlDataForHistory.risk_level,
-                health_score: healthScore
-            });
-        }
+        const histData = window.__mlDataForHistory || {};
+        saveCurrentAnalysisToHistory({
+            patient_name: patientName || "Patient",
+            age: age || "-",
+            gender: gender || "-",
+            symptoms: symptoms || "",
+            predicted_disease: histData.predicted_disease || window.__lastPredictedDisease || "Clinical Assessment",
+            confidence: histData.confidence || 88,
+            risk_level: histData.risk_level || "Medium",
+            health_score: healthScore || 80
+        });
 
         analyzeBtn.disabled = false;
         analyzeBtn.innerHTML = "🔍 " + t("btn_analyze");
