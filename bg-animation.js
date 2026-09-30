@@ -203,12 +203,12 @@
         draw(isDark) {
             const currentAlpha = this.alpha * (0.75 + 0.25 * Math.sin(this.pulseVal));
             const primaryColor = isDark 
-                ? `rgba(0, 255, 163, ${currentAlpha})` 
-                : `rgba(16, 185, 129, ${currentAlpha})`;
-            const secondaryColor = isDark 
                 ? `rgba(0, 229, 255, ${currentAlpha})` 
-                : `rgba(37, 99, 235, ${currentAlpha})`;
-            const glowColor = isDark ? "rgba(0, 255, 163, 0.45)" : "rgba(16, 185, 129, 0.35)";
+                : `rgba(0, 150, 180, ${currentAlpha})`;
+            const secondaryColor = isDark 
+                ? `rgba(139, 92, 246, ${currentAlpha})` 
+                : `rgba(109, 62, 224, ${currentAlpha})`;
+            const glowColor = isDark ? "rgba(0, 229, 255, 0.45)" : "rgba(0, 150, 180, 0.25)";
 
             ctx.save();
             if (this.isCross) {
@@ -264,7 +264,7 @@
 
         ctx.save();
         ctx.lineWidth = isDark ? 2.8 : 2.2;
-        const ecgColor = isDark ? "0, 255, 163" : "16, 185, 129";
+        const ecgColor = isDark ? "0, 255, 170" : "0, 160, 110";
 
         ctx.beginPath();
         for (let x = ecgX - trailLength; x <= ecgX; x += 3) {
@@ -310,7 +310,7 @@
 
     function connectParticles(isDark) {
         const maxDist = 135;
-        const lineBaseColor = isDark ? "0, 229, 255" : "37, 99, 235";
+        const lineBaseColor = isDark ? "0, 229, 255" : "0, 150, 180";
 
         for (let i = 0; i < particles.length; i++) {
             for (let j = i + 1; j < particles.length; j++) {
@@ -335,7 +335,7 @@
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist < mouse.radius) {
                     const alpha = (1 - dist / mouse.radius) * 0.55;
-                    ctx.strokeStyle = isDark ? `rgba(0, 255, 163, ${alpha})` : `rgba(16, 185, 129, ${alpha})`;
+                    ctx.strokeStyle = isDark ? `rgba(139, 92, 246, ${alpha})` : `rgba(109, 62, 224, ${alpha})`;
                     ctx.lineWidth = 1.4;
                     ctx.beginPath();
                     ctx.moveTo(particles[i].x, particles[i].y);
