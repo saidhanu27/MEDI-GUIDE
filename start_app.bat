@@ -19,8 +19,8 @@ if %errorlevel% neq 0 (
 echo Checking dependencies...
 pip install -r requirements.txt >nul 2>nul
 
-echo Starting application on http://127.0.0.1:5000 ...
-start "" "http://127.0.0.1:5000"
+echo Starting application on http://127.0.0.1:5050 ...
+start "" "http://127.0.0.1:5050"
 python app.py
 
 pause
