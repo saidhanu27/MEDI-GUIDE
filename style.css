@@ -200,24 +200,33 @@ header, section, footer{
 }
 
 #logoutBtn{
-    width:auto;
-    padding:9px 16px;
+    width:auto !important;
+    height:38px;
+    padding:0 14px !important;
+    margin:0 !important;
+    display:inline-flex !important;
+    align-items:center;
+    justify-content:center;
     font-size:13px;
-    background:rgba(255,61,104,.1);
-    color:var(--red);
-    border:1px solid rgba(255,61,104,.35);
-    border-radius:10px;
+    background:rgba(255,61,104,.1) !important;
+    color:var(--red) !important;
+    border:1px solid rgba(255,61,104,.35) !important;
+    border-radius:10px !important;
     cursor:pointer;
     font-weight:600;
-    margin:0;
+    white-space:nowrap;
     flex:none;
-    box-shadow:none;
+    box-sizing:border-box;
+    box-shadow:none !important;
+    transition:all 0.2s ease;
 }
 
 #logoutBtn:hover{
-    background:rgba(255,61,104,.18);
-    transform:none;
-    box-shadow:none;
+    background:rgba(255,61,104,.2) !important;
+    border-color:var(--red) !important;
+    color:#ffffff !important;
+    transform:translateY(-1px);
+    box-shadow:none !important;
 }
 
 .history-item{
@@ -420,23 +429,27 @@ nav{
 .nav-controls{
     display:flex;
     align-items:center;
-    gap:12px;
+    gap:8px;
     flex:none;
     flex-wrap:wrap;
+    justify-content:flex-end;
 }
 
 .logged-in-label{
-    display:flex;
+    display:inline-flex;
     align-items:center;
     gap:6px;
     font-size:13px;
     font-weight:600;
     color:var(--text);
     white-space:nowrap;
-    background:var(--glass);
-    border:1px solid var(--glass-border);
-    padding:8px 14px;
+    background:rgba(139,92,246,0.12);
+    border:1px solid rgba(139,92,246,0.35);
+    padding:0 14px;
+    height:38px;
     border-radius:10px;
+    box-sizing:border-box;
+    margin:0 !important;
 }
 
 .logo{
@@ -1327,49 +1340,63 @@ footer{
 }
 
 #themeBtn{
-    width:auto;
-    padding:9px 18px;
+    width:auto !important;
+    height:38px;
+    padding:0 14px !important;
+    margin:0 !important;
+    display:inline-flex !important;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
     font-size:13px;
-    background:rgba(255,255,255,.06);
-    color:var(--text);
-    border:1px solid var(--glass-border);
-    border-radius:10px;
+    background:rgba(255,255,255,.06) !important;
+    color:var(--text) !important;
+    border:1px solid var(--glass-border) !important;
+    border-radius:10px !important;
     cursor:pointer;
     font-weight:600;
-    margin-left:0;
+    white-space:nowrap;
     flex:none;
-    box-shadow:none;
+    box-sizing:border-box;
+    box-shadow:none !important;
+    transition:all 0.2s ease;
 }
 
 #themeBtn:hover{
-    background:rgba(255,255,255,.1);
-    transform:none;
-    box-shadow:none;
+    background:rgba(255,255,255,.12) !important;
+    transform:translateY(-1px);
+    box-shadow:none !important;
 }
 
 #languageSelect{
-    width:auto;
-    padding:9px 14px;
+    width:auto !important;
+    height:38px;
+    padding:0 30px 0 12px !important;
     font-size:13px;
     font-weight:600;
     font-family:'Poppins',sans-serif;
-    background:rgba(255,255,255,.06);
-    color:var(--text);
-    border:1px solid var(--glass-border);
-    border-radius:10px;
+    background-color:rgba(255,255,255,.06) !important;
+    color:var(--text) !important;
+    border:1px solid var(--glass-border) !important;
+    border-radius:10px !important;
     cursor:pointer;
-    margin:0;
+    margin:0 !important;
     appearance:none;
     -webkit-appearance:none;
     -moz-appearance:none;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M0 0l5 6 5-6z' fill='%238b93a7'/></svg>");
     background-repeat:no-repeat;
-    background-position:right 12px center;
-    padding-right:28px;
-    transition:.25s;
+    background-position:right 10px center;
+    box-sizing:border-box;
+    white-space:nowrap;
+    flex:none;
+    transition:all 0.2s ease;
 }
 
 #languageSelect:hover{
+    background-color:rgba(255,255,255,.12) !important;
+    border-color:var(--cyan);
+}
     background-color:rgba(255,255,255,.1);
     border-color:var(--cyan);
 }
@@ -1472,19 +1499,25 @@ img{
 
     .nav-controls {
         margin: 0;
-        gap: 8px;
+        gap: 6px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
     }
 
-    .logged-in-label {
-        font-size: 12px;
-        padding: 6px 10px;
-    }
-
+    .logged-in-label,
     #languageSelect,
+    .install-pwa-btn,
+    #installAppNavBtn,
     #themeBtn,
     #logoutBtn {
-        padding: 7px 11px;
-        font-size: 12px;
+        height: 34px !important;
+        padding: 0 10px !important;
+        font-size: 12px !important;
+        width: auto !important;
+        margin: 0 !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
     }
 
     .hero {
@@ -1944,34 +1977,76 @@ img{
    =================================================== */
 
 /* PWA Install Button in Nav */
-.install-pwa-btn {
-    display: inline-flex;
+.install-pwa-btn, #installAppNavBtn {
+    width: auto !important;
+    height: 38px;
+    padding: 0 14px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    background: linear-gradient(135deg, rgba(0, 229, 255, 0.15), rgba(79, 172, 254, 0.2));
-    border: 1px solid rgba(0, 229, 255, 0.45);
-    color: var(--cyan);
-    padding: 7px 14px;
-    border-radius: 20px;
+    background: rgba(0, 229, 255, 0.1) !important;
+    border: 1px solid rgba(0, 229, 255, 0.35) !important;
+    color: var(--cyan) !important;
+    border-radius: 10px !important;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: 0 2px 8px rgba(0, 229, 255, 0.15);
+    white-space: nowrap;
+    flex: none;
+    box-sizing: border-box;
+    box-shadow: none !important;
+    transition: all 0.2s ease;
 }
-.install-pwa-btn:hover {
-    background: linear-gradient(135deg, #00f2fe, #4facfe);
-    color: #040814;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 229, 255, 0.4);
+.install-pwa-btn:hover, #installAppNavBtn:hover {
+    background: rgba(0, 229, 255, 0.22) !important;
+    border-color: var(--cyan) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 229, 255, 0.3) !important;
 }
 .install-pwa-btn.pulse-highlight {
     animation: installPulse 1.8s infinite;
 }
 @keyframes installPulse {
     0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.6); }
-    70% { box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); }
+    70% { box-shadow: 0 0 0 8px rgba(0, 229, 255, 0); }
     100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
+}
+
+/* Nav Controls Light Mode Overrides */
+body:not(.dark-mode) .logged-in-label {
+    background: rgba(139, 92, 246, 0.08);
+    border-color: rgba(139, 92, 246, 0.25);
+    color: #475569;
+}
+body:not(.dark-mode) #themeBtn {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+body:not(.dark-mode) #themeBtn:hover {
+    background: #f1f5f9 !important;
+}
+body:not(.dark-mode) #languageSelect {
+    background-color: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+body:not(.dark-mode) #languageSelect:hover {
+    background-color: #f1f5f9 !important;
+}
+body:not(.dark-mode) .install-pwa-btn,
+body:not(.dark-mode) #installAppNavBtn {
+    background: rgba(2, 132, 199, 0.08) !important;
+    border-color: rgba(2, 132, 199, 0.3) !important;
+    color: #0284c7 !important;
+}
+body:not(.dark-mode) .install-pwa-btn:hover,
+body:not(.dark-mode) #installAppNavBtn:hover {
+    background: rgba(2, 132, 199, 0.16) !important;
+    color: #0369a1 !important;
 }
 
 /* Voice Output Audio Wave Animation */
