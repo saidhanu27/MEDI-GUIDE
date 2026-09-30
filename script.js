@@ -1040,6 +1040,16 @@ function startVoiceInput() {
 
         document.getElementById("extraSymptoms").value = speech;
 
+        // Auto-extract age into age column if spoken
+        const ageMatch = speech.match(/(?:age|years old|years|వయస్సు|उम्र|வயது|ವಯಸ್ಸು)\s*(?:is\s*)?(\d{1,3})/i)
+                      || speech.match(/(\d{1,3})\s*(?:years old|years|ఏళ్ల|సంవత్సరాలు|साल)/i);
+        if (ageMatch && ageMatch[1]) {
+            const parsedAge = parseInt(ageMatch[1]);
+            if (parsedAge >= 1 && parsedAge <= 120) {
+                document.getElementById("age").value = parsedAge;
+            }
+        }
+
     };
 
     recognition.onerror = function(event) {
@@ -1536,11 +1546,15 @@ function openAppointmentModal(hospitalName, specialistName) {
     const specialist = specialistName || window.__lastRecommendedSpecialist || "General Physician";
 
     const nameInput = document.getElementById("apptPatientName");
+    const ageInput = document.getElementById("apptAge");
     const specInput = document.getElementById("apptSpecialist");
     const dateInput = document.getElementById("apptDate");
     const hospSelect = document.getElementById("apptHospitalSelect");
 
+    const currentAge = document.getElementById("age")?.value.trim() || "";
+
     if (nameInput) nameInput.value = patientName;
+    if (ageInput && currentAge) ageInput.value = currentAge;
     if (specInput) specInput.value = specialist;
 
     if (dateInput) {
@@ -1580,6 +1594,7 @@ function closeAppointmentModal() {
 
 function confirmAppointmentBooking() {
     const name = document.getElementById("apptPatientName")?.value.trim();
+    const age = document.getElementById("apptAge")?.value.trim() || document.getElementById("age")?.value.trim() || "";
     const phone = document.getElementById("apptPhone")?.value.trim();
     const specialist = document.getElementById("apptSpecialist")?.value.trim() || "General Physician";
     const hospital = document.getElementById("apptHospitalSelect")?.value || "Apollo Speciality Hospital";
@@ -1603,6 +1618,7 @@ function confirmAppointmentBooking() {
     const bookingRecord = {
         token: tokenCode,
         patientName: name,
+        age: age,
         phone: phone,
         specialist: specialist,
         hospital: hospital,
@@ -1642,8 +1658,8 @@ function confirmAppointmentBooking() {
 
             <div class="token-info-grid">
                 <div class="token-info-item">
-                    <div class="lbl">Patient Name</div>
-                    <div class="val">👤 ${name}</div>
+                    <div class="lbl">Patient Details</div>
+                    <div class="val">👤 ${name}${age ? ` (${age} yrs)` : ""}</div>
                 </div>
                 <div class="token-info-item">
                     <div class="lbl">Specialist</div>
