@@ -1077,6 +1077,12 @@ function startVoiceInput() {
 
 function resetForm() {
 
+    if ('speechSynthesis' in window && (isReportSpeaking || window.speechSynthesis.speaking)) {
+        window.speechSynthesis.cancel();
+        isReportSpeaking = false;
+        updateVoiceButtonState(false);
+    }
+
     document.getElementById("patientName").value = "";
 
     document.getElementById("age").value = "";
@@ -1440,9 +1446,87 @@ function escapeQuotes(str) {
 
 // =========================================================
 // Feature 1: Voice Output (AI Speech - Text to Speech)
+// Soft, Clean, Natural Healthcare Voice Engine
 // =========================================================
 let isReportSpeaking = false;
 let currentUtterance = null;
+let cachedSpeechVoices = [];
+
+function initSystemVoices() {
+    if ('speechSynthesis' in window) {
+        cachedSpeechVoices = window.speechSynthesis.getVoices() || [];
+    }
+}
+initSystemVoices();
+if ('speechSynthesis' in window && window.speechSynthesis.onvoiceschanged !== undefined) {
+    window.speechSynthesis.onvoiceschanged = initSystemVoices;
+}
+
+function selectSoftNaturalVoice(langCode) {
+    let voices = ('speechSynthesis' in window) ? window.speechSynthesis.getVoices() : [];
+    if (!voices || voices.length === 0) {
+        voices = cachedSpeechVoices;
+    }
+    if (!voices || voices.length === 0) return null;
+
+    const prefix = (langCode === "te") ? "te"
+                 : (langCode === "hi") ? "hi"
+                 : (langCode === "ta") ? "ta"
+                 : (langCode === "kn") ? "kn"
+                 : (langCode === "ml") ? "ml"
+                 : "en";
+
+    // 1. Filter voices for the targeted language
+    let langVoices = voices.filter(v => {
+        if (!v.lang) return false;
+        const l = v.lang.toLowerCase().replace('_', '-');
+        return l.startsWith(prefix) || l.includes(`-${prefix}`);
+    });
+
+    // 2. Prioritize high-quality natural/neural soothing voices in targeted language
+    if (langVoices.length > 0) {
+        // Priority 1: High-fidelity Neural / Natural voices (e.g. Edge "Microsoft ... Online (Natural)")
+        const neuralVoice = langVoices.find(v => {
+            const name = (v.name || "").toLowerCase();
+            return name.includes("natural") || name.includes("neural") || name.includes("online (natural)");
+        });
+        if (neuralVoice) return neuralVoice;
+
+        // Priority 2: Google Online voices (Chrome)
+        const googleVoice = langVoices.find(v => {
+            const name = (v.name || "").toLowerCase();
+            return name.includes("google");
+        });
+        if (googleVoice) return googleVoice;
+
+        // Priority 3: Warm, soft female/melodious voice models
+        const softNames = ["aria", "jenny", "sonia", "neerja", "swara", "shruti", "pallavi", "sapna", "sobhana", "zira", "samantha", "karen", "victoria"];
+        const namedSoftVoice = langVoices.find(v => {
+            const name = (v.name || "").toLowerCase();
+            return softNames.some(sn => name.includes(sn));
+        });
+        if (namedSoftVoice) return namedSoftVoice;
+
+        // Priority 4: Any non-robotic voice (filter out harsh metallic legacy voices like David)
+        const gentleVoice = langVoices.find(v => {
+            const name = (v.name || "").toLowerCase();
+            return !name.includes("david") && !name.includes("desktop");
+        });
+        if (gentleVoice) return gentleVoice;
+
+        return langVoices[0];
+    }
+
+    // 3. Fallback when browser lacks voice for specific Indic language:
+    // Fall back to the softest, most natural English voice
+    const enVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith("en"));
+    const softEnVoice = enVoices.find(v => {
+        const name = (v.name || "").toLowerCase();
+        return name.includes("natural") || name.includes("neural") || name.includes("aria") || name.includes("jenny") || name.includes("zira");
+    }) || enVoices.find(v => !(v.name || "").toLowerCase().includes("david")) || enVoices[0];
+
+    return softEnVoice || voices[0] || null;
+}
 
 function toggleReadAloud() {
     if (!('speechSynthesis' in window)) {
@@ -1471,35 +1555,47 @@ function toggleReadAloud() {
     let speechText = "";
     const lang = currentLanguage || "en";
 
+    // Format text with gentle pauses (...) and warm bedside clinical phrasing
     if (lang === "te") {
-        speechText = `నమస్కారం ${patientName}. మీ క్లినికల్ అసెస్‌మెంట్ ప్రకారం, మీ లక్షణాలు ${diseaseName} ను సూచిస్తున్నాయి. అంచనా ఖచ్చితత్వం ${confidence} శాతం. రిస్క్ స్థాయి: ${riskLevel}. మీరు ఒక ${specialist} ని సంప్రదించడం మంచిది. తగినంత విశ్రాంతి తీసుకోండి, పుష్కలంగా మంచి నీరు త్రాగండి. ఇది ప్రాథమిక మార్గదర్శకత్వం మాత్రమే.`;
+        speechText = `నమస్కారం, ${patientName}... మీ ఆరోగ్య వివరాల ప్రకారం, మీ లక్షణాలు ${diseaseName} ను సూచిస్తున్నాయి... అంచనా ఖచ్చితత్వం ${confidence} శాతం... రిస్క్ స్థాయి, ${riskLevel}... మీరు ${specialist} గారిని సంప్రదించడం మంచిది... దయచేసి తగినంత విశ్రాంతి తీసుకోండి, పుష్కలంగా మంచి నీరు త్రాగండి... మీ ఆరోగ్యాన్ని జాగ్రత్తగా చూసుకోండి.`;
     } else if (lang === "hi") {
-        speechText = `नमस्ते ${patientName}. आपके स्वास्थ्य मूल्यांकन के अनुसार, आपके लक्षण ${diseaseName} की ओर संकेत करते हैं। सटीकता ${confidence} प्रतिशत है। जोखिम स्तर: ${riskLevel} है। आपको ${specialist} से परामर्श करने की सलाह दी जाती है। कृपया पर्याप्त आराम करें और पानी पिएं।`;
+        speechText = `नमस्ते, ${patientName}... आपके स्वास्थ्य मूल्यांकन के अनुसार, आपके लक्षण ${diseaseName} की ओर संकेत करते हैं... सटीकता ${confidence} प्रतिशत है... जोखिम स्तर, ${riskLevel} है... आपको ${specialist} से परामर्श करने की सलाह दी जाती है... कृपया पर्याप्त आराम करें और पानी पिएं... अपना ख्याल रखें।`;
     } else if (lang === "ta") {
-        speechText = `வணக்கம் ${patientName}. உங்கள் மருத்துவ மதிப்பீட்டின்படி, உங்கள் அறிகுறிகள் ${diseaseName} ஐக் குறிக்கின்றன. துல்லியம் ${confidence} சதவீதம். நீங்கள் ${specialist} மருத்துவரை அணுகுமாறு பரிந்துரைக்கப்படுகிறீர்கள்.`;
+        speechText = `வணக்கம், ${patientName}... உங்கள் மருத்துவ மதிப்பீட்டின்படி, உங்கள் அறிகுறிகள் ${diseaseName} ஐக் குறிக்கின்றன... துல்லியம் ${confidence} சதவீதம்... நீங்கள் ஒரு ${specialist} மருத்துவரை அணுகுமாறு பரிந்துரைக்கப்படுகிறீர்கள்... தயவுசெய்து நன்றாக ஓய்வெடுங்கள், ஆரோக்கியமாக இருங்கள்.`;
     } else if (lang === "kn") {
-        speechText = `ನಮಸ್ಕಾರ ${patientName}. ನಿಮ್ಮ ಆರೋಗ್ಯ ಮೌಲ್ಯಮಾಪನದ ಪ್ರಕಾರ, ನಿಮ್ಮ ಲಕ್ಷಣಗಳು ${diseaseName} ಅನ್ನು ಸೂಚಿಸುತ್ತವೆ. ನಿಖರತೆ ${confidence} ಪ್ರತಿಶತ. ನೀವು ${specialist} ಅವರನ್ನು ಸಂಪರ್ಕಿಸಲು ಸೂಚಿಸಲಾಗಿದೆ.`;
+        speechText = `ನಮಸ್ಕಾರ, ${patientName}... ನಿಮ್ಮ ಆರೋಗ್ಯ ಮೌಲ್ಯಮಾಪನದ ಪ್ರಕಾರ, ನಿಮ್ಮ ಲಕ್ಷಣಗಳು ${diseaseName} ಅನ್ನು ಸೂಚಿಸುತ್ತವೆ... ನಿಖರತೆ ${confidence} ಪ್ರತಿಶತ... ನೀವು ${specialist} ಅವರನ್ನು ಸಂಪರ್ಕಿಸಲು ಸೂಚಿಸಲಾಗಿದೆ... ದಯವಿಟ್ಟು ಸಾಕಷ್ಟು ವಿಶ್ರಾಂತಿ ಪಡೆಯಿರಿ.`;
     } else if (lang === "ml") {
-        speechText = `നമസ്കാരം ${patientName}. നിങ്ങളുടെ ആരോഗ്യ വിലയിരുത്തൽ അനുസരിച്ച്, നിങ്ങളുടെ ലക്ഷണങ്ങൾ ${diseaseName} ലേക്ക് വിരൽ ചൂണ്ടുന്നു. നിങ്ങൾ ${specialist} നെ സമീപിക്കാൻ നിർദ്ദേശിക്കുന്നു.`;
+        speechText = `നമസ്കാരം, ${patientName}... നിങ്ങളുടെ ആരോഗ്യ വിലയിരുത്തൽ അനുസരിച്ച്, നിങ്ങളുടെ ലക്ഷണങ്ങൾ ${diseaseName} ലേക്ക് വിരൽ ചൂണ്ടുന്നു... നിങ്ങൾ ఒక ${specialist} നെ സമീപിക്കാൻ നിർദ്ദേശിക്കുന്നു... ദയവായി നന്നായി വിശ്രമിക്കുക, ആരോഗ്യം ശ്രദ്ധിക്കുക.`;
     } else {
-        speechText = `Hello ${patientName}. According to your clinical health assessment, your primary indicated condition is ${diseaseName}, evaluated with ${confidence} percent confidence. The overall risk level is ${riskLevel}. We recommend consulting a ${specialist} for a thorough examination. Please get plenty of rest, stay well hydrated, and follow safe lifestyle practices.`;
+        speechText = `Hello, ${patientName}... Here is your personalized health summary... Based on your reported symptoms, the primary indication is ${diseaseName}, evaluated with ${confidence} percent confidence... The overall risk level is ${riskLevel}... We recommend scheduling a consultation with a ${specialist}... Please take good care, get plenty of gentle rest, and stay well hydrated.`;
     }
 
+    // Stop any ongoing audio before starting fresh
     window.speechSynthesis.cancel();
+
     currentUtterance = new SpeechSynthesisUtterance(speechText);
 
-    // Look for matching voice
-    const voices = window.speechSynthesis.getVoices();
-    if (voices && voices.length > 0) {
-        const langPrefix = (lang === "te") ? "te" : (lang === "hi") ? "hi" : (lang === "ta") ? "ta" : (lang === "kn") ? "kn" : (lang === "ml") ? "ml" : "en";
-        const matchingVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(langPrefix));
-        if (matchingVoice) {
-            currentUtterance.voice = matchingVoice;
-        }
+    // Set locale code
+    const langCodes = {
+        te: "te-IN",
+        hi: "hi-IN",
+        ta: "ta-IN",
+        kn: "kn-IN",
+        ml: "ml-IN",
+        en: "en-US"
+    };
+    currentUtterance.lang = langCodes[lang] || "en-US";
+
+    // Pick best soft, soothing natural voice
+    const selectedVoice = selectSoftNaturalVoice(lang);
+    if (selectedVoice) {
+        currentUtterance.voice = selectedVoice;
     }
 
-    currentUtterance.rate = 0.92;
-    currentUtterance.pitch = 1.0;
+    // Tuning speech parameters for a clean, soft, soothing voice
+    currentUtterance.rate = 0.88;    // Relaxed, gentle pacing (not rushed)
+    currentUtterance.pitch = 0.97;   // Warm, soft acoustic tone (reduces harsh robotic highs)
+    currentUtterance.volume = 0.95;  // Crisp, clean volume
 
     currentUtterance.onstart = () => {
         isReportSpeaking = true;
@@ -1511,12 +1607,19 @@ function toggleReadAloud() {
         updateVoiceButtonState(false);
     };
 
-    currentUtterance.onerror = () => {
+    currentUtterance.onerror = (e) => {
+        // Ignore "interrupted" or "canceled" when user intentionally stopped or clicked again
+        if (e && e.error !== 'interrupted' && e.error !== 'canceled') {
+            console.warn("Speech synthesis notice:", e.error);
+        }
         isReportSpeaking = false;
         updateVoiceButtonState(false);
     };
 
-    window.speechSynthesis.speak(currentUtterance);
+    // Chrome/Edge delay buffer prevents immediate cancellation glitch
+    setTimeout(() => {
+        window.speechSynthesis.speak(currentUtterance);
+    }, 60);
 }
 
 function updateVoiceButtonState(speaking) {
