@@ -3,16 +3,19 @@
 // =========================================================
 
 (function () {
-    const canvas = document.createElement("canvas");
-    canvas.id = "medicalBgCanvas";
+    let canvas = document.getElementById("medicalBgCanvas");
+    if (!canvas) {
+        canvas = document.createElement("canvas");
+        canvas.id = "medicalBgCanvas";
+        document.body.prepend(canvas);
+    }
     canvas.style.position = "fixed";
     canvas.style.top = "0";
     canvas.style.left = "0";
     canvas.style.width = "100%";
     canvas.style.height = "100%";
-    canvas.style.zIndex = "0";
+    canvas.style.zIndex = "1";
     canvas.style.pointerEvents = "none";
-    document.body.prepend(canvas);
 
     const ctx = canvas.getContext("2d");
 

@@ -72,16 +72,15 @@ body::before{
     background-size:cover;
     background-position:center;
     background-repeat:no-repeat;
-    opacity:.12;
+    opacity:.15;
 }
 
 body.dark-mode::before{
-    opacity:.10;
+    opacity:.14;
 }
 
 body:not(.dark-mode)::before{
-    opacity:.16;
-    mix-blend-mode:multiply;
+    opacity:.18;
 }
 
 #medicalBgCanvas{
@@ -90,13 +89,13 @@ body:not(.dark-mode)::before{
     left:0;
     width:100vw;
     height:100vh;
-    z-index:0;
+    z-index:1;
     pointer-events:none;
 }
 
 header, section, footer{
     position:relative;
-    z-index:1;
+    z-index:2;
 }
 
 /* =========================================================
