@@ -1245,10 +1245,13 @@ function findHospitalForMySymptoms() {
                     <div class="hospital-meta" style="color: #94a3b8; font-size: 13px; margin-bottom: 10px;">
                         📞 ${h.phone ? h.phone : "+91 108 (24/7 Emergency Ambulance)"}
                     </div>
-                    <div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
                         <a href="${h.maps_link}" target="_blank" class="hospital-map-link-btn">
-                            🗺️ View Location & Directions on Google Maps &rarr;
+                            🗺️ Directions on Map &rarr;
                         </a>
+                        <button type="button" class="hospital-map-link-btn" style="cursor:pointer; background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.4); color:#10b981;" onclick="openAppointmentModal('${escapeQuotes(h.name)}', '${escapeQuotes(specialist)}')">
+                            📅 Book OPD Slot
+                        </button>
                     </div>
                 </div>
             `).join("");
@@ -1288,10 +1291,13 @@ function findHospitalForMySymptoms() {
                     <div class="hospital-meta" style="color: #94a3b8; font-size: 13px; margin-bottom: 10px;">
                         📞 +91 044 2829 0200 / 108 Emergency Care
                     </div>
-                    <div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
                         <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hname + ' hospital')}" target="_blank" class="hospital-map-link-btn">
-                            🗺️ View Location & Directions on Google Maps &rarr;
+                            🗺️ Directions on Map &rarr;
                         </a>
+                        <button type="button" class="hospital-map-link-btn" style="cursor:pointer; background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.4); color:#10b981;" onclick="openAppointmentModal('${escapeQuotes(hname)}', '${escapeQuotes(specialist)}')">
+                            📅 Book OPD Slot
+                        </button>
                     </div>
                 </div>
             `).join("");
@@ -1395,43 +1401,301 @@ window.addEventListener('appinstalled', () => {
     alert("🎉 MediGuide AI App has been installed! You can now launch it directly from your Home Screen or Desktop.");
 });
 
-function openDownloadModal() {
-    const modal = document.getElementById('downloadModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        // Detect iOS
-        const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const iosGuide = document.getElementById('iosInstallGuide');
-        const pwaBtn = document.getElementById('pwaInstallActionBtn');
-        if (isIos && iosGuide) {
-            iosGuide.style.display = 'block';
-            if (pwaBtn) pwaBtn.style.display = 'none';
-        }
-    }
-}
-
-function closeDownloadModal() {
-    const modal = document.getElementById('downloadModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
-
-async function triggerPwaInstall() {
+function handlePwaInstallClick() {
     if (deferredInstallPrompt) {
         deferredInstallPrompt.prompt();
-        const choice = await deferredInstallPrompt.userChoice;
-        if (choice.outcome === 'accepted') {
-            console.log('[PWA] User accepted the install prompt');
-            closeDownloadModal();
-        } else {
-            console.log('[PWA] User dismissed the install prompt');
-        }
-        deferredInstallPrompt = null;
+        deferredInstallPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('[PWA] User accepted the installation');
+                const btn = document.getElementById("installAppNavBtn");
+                if (btn) btn.innerHTML = "✅ App Installed";
+            }
+            deferredInstallPrompt = null;
+        });
     } else {
-        // Fallback instructions if prompt not supported or already triggered
-        alert("📲 How to Install MediGuide AI:\n\n• On Chrome / Android: Tap the 3 dots (⋮) in the top-right corner and select 'Install app' or 'Add to Home screen'.\n• On iPhone (Safari): Tap the Share button (📤) at the bottom and select 'Add to Home Screen' (➕).\n• On PC (Chrome/Edge): Click the Install icon (⊕) in the browser address bar.");
+        const modal = document.getElementById("installGuideModal");
+        if (modal) modal.style.display = "flex";
     }
+}
+
+function closeInstallGuideModal() {
+    const modal = document.getElementById("installGuideModal");
+    if (modal) modal.style.display = "none";
+}
+
+function escapeQuotes(str) {
+    if (!str) return "";
+    return String(str).replace(/'/g, "\\'").replace(/"/g, "&quot;");
+}
+
+// =========================================================
+// Feature 1: Voice Output (AI Speech - Text to Speech)
+// =========================================================
+let isReportSpeaking = false;
+let currentUtterance = null;
+
+function toggleReadAloud() {
+    if (!('speechSynthesis' in window)) {
+        alert("Your browser does not support Web Speech synthesis. Please use Google Chrome or Microsoft Edge.");
+        return;
+    }
+
+    if (isReportSpeaking || window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        isReportSpeaking = false;
+        updateVoiceButtonState(false);
+        return;
+    }
+
+    const patientName = document.getElementById("patientName")?.value.trim() || "Patient";
+    const diseaseName = window.__lastPredictedDisease;
+    const specialist = window.__lastRecommendedSpecialist || "General Physician";
+    const riskLevel = window.__mlDataForHistory?.risk_level || "Moderate";
+    const confidence = window.__mlDataForHistory?.confidence || 85;
+
+    if (!diseaseName) {
+        alert("Please analyze your symptoms first to listen to the clinical report!");
+        return;
+    }
+
+    let speechText = "";
+    const lang = currentLanguage || "en";
+
+    if (lang === "te") {
+        speechText = `నమస్కారం ${patientName}. మీ క్లినికల్ అసెస్‌మెంట్ ప్రకారం, మీ లక్షణాలు ${diseaseName} ను సూచిస్తున్నాయి. అంచనా ఖచ్చితత్వం ${confidence} శాతం. రిస్క్ స్థాయి: ${riskLevel}. మీరు ఒక ${specialist} ని సంప్రదించడం మంచిది. తగినంత విశ్రాంతి తీసుకోండి, పుష్కలంగా మంచి నీరు త్రాగండి. ఇది ప్రాథమిక మార్గదర్శకత్వం మాత్రమే.`;
+    } else if (lang === "hi") {
+        speechText = `नमस्ते ${patientName}. आपके स्वास्थ्य मूल्यांकन के अनुसार, आपके लक्षण ${diseaseName} की ओर संकेत करते हैं। सटीकता ${confidence} प्रतिशत है। जोखिम स्तर: ${riskLevel} है। आपको ${specialist} से परामर्श करने की सलाह दी जाती है। कृपया पर्याप्त आराम करें और पानी पिएं।`;
+    } else if (lang === "ta") {
+        speechText = `வணக்கம் ${patientName}. உங்கள் மருத்துவ மதிப்பீட்டின்படி, உங்கள் அறிகுறிகள் ${diseaseName} ஐக் குறிக்கின்றன. துல்லியம் ${confidence} சதவீதம். நீங்கள் ${specialist} மருத்துவரை அணுகுமாறு பரிந்துரைக்கப்படுகிறீர்கள்.`;
+    } else if (lang === "kn") {
+        speechText = `ನಮಸ್ಕಾರ ${patientName}. ನಿಮ್ಮ ಆರೋಗ್ಯ ಮೌಲ್ಯಮಾಪನದ ಪ್ರಕಾರ, ನಿಮ್ಮ ಲಕ್ಷಣಗಳು ${diseaseName} ಅನ್ನು ಸೂಚಿಸುತ್ತವೆ. ನಿಖರತೆ ${confidence} ಪ್ರತಿಶತ. ನೀವು ${specialist} ಅವರನ್ನು ಸಂಪರ್ಕಿಸಲು ಸೂಚಿಸಲಾಗಿದೆ.`;
+    } else if (lang === "ml") {
+        speechText = `നമസ്കാരം ${patientName}. നിങ്ങളുടെ ആരോഗ്യ വിലയിരുത്തൽ അനുസരിച്ച്, നിങ്ങളുടെ ലക്ഷണങ്ങൾ ${diseaseName} ലേക്ക് വിരൽ ചൂണ്ടുന്നു. നിങ്ങൾ ${specialist} നെ സമീപിക്കാൻ നിർദ്ദേശിക്കുന്നു.`;
+    } else {
+        speechText = `Hello ${patientName}. According to your clinical health assessment, your primary indicated condition is ${diseaseName}, evaluated with ${confidence} percent confidence. The overall risk level is ${riskLevel}. We recommend consulting a ${specialist} for a thorough examination. Please get plenty of rest, stay well hydrated, and follow safe lifestyle practices.`;
+    }
+
+    window.speechSynthesis.cancel();
+    currentUtterance = new SpeechSynthesisUtterance(speechText);
+
+    // Look for matching voice
+    const voices = window.speechSynthesis.getVoices();
+    if (voices && voices.length > 0) {
+        const langPrefix = (lang === "te") ? "te" : (lang === "hi") ? "hi" : (lang === "ta") ? "ta" : (lang === "kn") ? "kn" : (lang === "ml") ? "ml" : "en";
+        const matchingVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(langPrefix));
+        if (matchingVoice) {
+            currentUtterance.voice = matchingVoice;
+        }
+    }
+
+    currentUtterance.rate = 0.92;
+    currentUtterance.pitch = 1.0;
+
+    currentUtterance.onstart = () => {
+        isReportSpeaking = true;
+        updateVoiceButtonState(true);
+    };
+
+    currentUtterance.onend = () => {
+        isReportSpeaking = false;
+        updateVoiceButtonState(false);
+    };
+
+    currentUtterance.onerror = () => {
+        isReportSpeaking = false;
+        updateVoiceButtonState(false);
+    };
+
+    window.speechSynthesis.speak(currentUtterance);
+}
+
+function updateVoiceButtonState(speaking) {
+    const btn = document.getElementById("voiceListenBtn");
+    const label = document.getElementById("voiceListenLabel");
+    if (!btn || !label) return;
+
+    if (speaking) {
+        btn.classList.add("speaking-wave");
+        btn.querySelector(".btn-icon").innerText = "⏹️";
+        label.innerText = t("btn_stop_listening");
+    } else {
+        btn.classList.remove("speaking-wave");
+        btn.querySelector(".btn-icon").innerText = "🔊";
+        label.innerText = t("btn_listen_report");
+    }
+}
+
+// =========================================================
+// Feature 3: Doctor Appointment Booking & Token Slip
+// =========================================================
+function openAppointmentModal(hospitalName, specialistName) {
+    const modal = document.getElementById("appointmentModal");
+    if (!modal) return;
+
+    const patientName = document.getElementById("patientName")?.value.trim() || "";
+    const specialist = specialistName || window.__lastRecommendedSpecialist || "General Physician";
+
+    const nameInput = document.getElementById("apptPatientName");
+    const specInput = document.getElementById("apptSpecialist");
+    const dateInput = document.getElementById("apptDate");
+    const hospSelect = document.getElementById("apptHospitalSelect");
+
+    if (nameInput) nameInput.value = patientName;
+    if (specInput) specInput.value = specialist;
+
+    if (dateInput) {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        dateInput.value = `${yyyy}-${mm}-${dd}`;
+        dateInput.min = `${yyyy}-${mm}-${dd}`;
+    }
+
+    if (hospitalName && hospSelect) {
+        let found = false;
+        for (let i = 0; i < hospSelect.options.length; i++) {
+            if (hospSelect.options[i].value.toLowerCase().includes(hospitalName.toLowerCase())) {
+                hospSelect.selectedIndex = i;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            const opt = new Option(hospitalName, hospitalName, true, true);
+            hospSelect.add(opt, 0);
+            hospSelect.selectedIndex = 0;
+        }
+    }
+
+    document.getElementById("appointmentFormWrap").style.display = "block";
+    document.getElementById("appointmentSlipWrap").style.display = "none";
+    modal.style.display = "flex";
+}
+
+function closeAppointmentModal() {
+    const modal = document.getElementById("appointmentModal");
+    if (modal) modal.style.display = "none";
+}
+
+function confirmAppointmentBooking() {
+    const name = document.getElementById("apptPatientName")?.value.trim();
+    const phone = document.getElementById("apptPhone")?.value.trim();
+    const specialist = document.getElementById("apptSpecialist")?.value.trim() || "General Physician";
+    const hospital = document.getElementById("apptHospitalSelect")?.value || "Apollo Speciality Hospital";
+    const date = document.getElementById("apptDate")?.value;
+    const timeSlot = document.getElementById("apptTimeSlot")?.value;
+    const mode = document.querySelector('input[name="apptMode"]:checked')?.value || "In-Person Hospital Visit";
+
+    if (!name) {
+        alert("Please enter the patient name.");
+        return;
+    }
+    if (!phone || phone.length < 8) {
+        alert("Please enter a valid contact phone number.");
+        return;
+    }
+
+    const tokenCode = "MG-" + Math.floor(1000 + Math.random() * 9000);
+    const counterNo = Math.floor(1 + Math.random() * 5);
+    const cabinNo = Math.floor(10 + Math.random() * 15);
+
+    const bookingRecord = {
+        token: tokenCode,
+        patientName: name,
+        phone: phone,
+        specialist: specialist,
+        hospital: hospital,
+        date: date,
+        timeSlot: timeSlot,
+        mode: mode,
+        counter: `OPD Counter #${counterNo} (Cabin ${cabinNo})`,
+        createdAt: new Date().toISOString()
+    };
+
+    try {
+        const existing = JSON.parse(localStorage.getItem("mediguide_appointments") || "[]");
+        existing.unshift(bookingRecord);
+        localStorage.setItem("mediguide_appointments", JSON.stringify(existing.slice(0, 10)));
+    } catch (e) {}
+
+    const slipWrap = document.getElementById("appointmentSlipWrap");
+    slipWrap.innerHTML = `
+        <div class="token-slip-card" id="printableTokenSlip">
+            <div class="token-badge-header">
+                <div class="token-hospital-brand">
+                    🏥 <span>${hospital}</span>
+                    <div style="font-size:12px; color:var(--text-dim); font-weight:500; margin-top:2px;">
+                        Verified by MediGuide AI Clinical Booking Portal
+                    </div>
+                </div>
+                <div class="token-number-box">
+                    <div class="token-tag">OPD Token</div>
+                    <div class="token-code">${tokenCode}</div>
+                </div>
+            </div>
+
+            <div class="token-confirmed-banner">
+                <span>✅</span>
+                <span>Appointment Confirmed & Priority OPD Reserved</span>
+            </div>
+
+            <div class="token-info-grid">
+                <div class="token-info-item">
+                    <div class="lbl">Patient Name</div>
+                    <div class="val">👤 ${name}</div>
+                </div>
+                <div class="token-info-item">
+                    <div class="lbl">Specialist</div>
+                    <div class="val">🩺 ${specialist}</div>
+                </div>
+                <div class="token-info-item">
+                    <div class="lbl">Date</div>
+                    <div class="val">📅 ${date || "Today"}</div>
+                </div>
+                <div class="token-info-item">
+                    <div class="lbl">Time Slot</div>
+                    <div class="val">⏰ ${timeSlot}</div>
+                </div>
+                <div class="token-info-item">
+                    <div class="lbl">Allocation</div>
+                    <div class="val">🚪 ${bookingRecord.counter}</div>
+                </div>
+                <div class="token-info-item">
+                    <div class="lbl">Mode</div>
+                    <div class="val">${mode.includes("Video") ? "💻 Tele-Consult" : "🏥 In-Person"}</div>
+                </div>
+            </div>
+
+            <div style="background:var(--bg); border:1px solid var(--glass-border); border-radius:10px; padding:10px; font-size:12px; color:var(--text-dim); text-align:center; margin-bottom:12px;">
+                🎟️ Please show this digital token or SMS confirmation at the hospital reception counter 15 minutes before your time slot.
+            </div>
+
+            <div class="token-slip-actions">
+                <button type="button" class="toolbar-btn primary" onclick="printAppointmentSlip()" style="justify-content:center; padding:10px;">
+                    🖨️ Print Token Slip
+                </button>
+                <button type="button" class="toolbar-btn secondary" onclick="resetAppointmentForm()" style="justify-content:center; padding:10px;">
+                    🔄 Book Another
+                </button>
+                <button type="button" class="toolbar-btn secondary" onclick="closeAppointmentModal()" style="justify-content:center; padding:10px;">
+                    ✖️ Done
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById("appointmentFormWrap").style.display = "none";
+    slipWrap.style.display = "block";
+}
+
+function resetAppointmentForm() {
+    document.getElementById("appointmentFormWrap").style.display = "block";
+    document.getElementById("appointmentSlipWrap").style.display = "none";
+}
+
+function printAppointmentSlip() {
+    window.print();
 }
 
 // =========================================================

@@ -91,6 +91,10 @@
                 <option value="ml">🇮🇳 മലയാളం</option>
             </select>
 
+            <button type="button" id="installAppNavBtn" class="install-pwa-btn" onclick="handlePwaInstallClick()" title="Install MediGuide App">
+                📲 <span id="installBtnText" data-i18n="btn_install_app">Install App</span>
+            </button>
+
             <button type="button" id="themeBtn" onclick="toggleTheme()">
                 🌙 <span data-i18n="theme_dark">Dark Mode</span>
             </button>
@@ -204,6 +208,14 @@
         <span class="btn-icon">📄</span><span data-i18n="btn_download">Save Report (PDF)</span>
     </button>
 
+    <button type="button" id="voiceListenBtn" class="toolbar-btn secondary" onclick="toggleReadAloud()">
+        <span class="btn-icon">🔊</span><span id="voiceListenLabel" data-i18n="btn_listen_report">Listen to Report</span>
+    </button>
+
+    <button type="button" id="bookApptBtn" class="toolbar-btn secondary" onclick="openAppointmentModal()">
+        <span class="btn-icon">📅</span><span data-i18n="btn_book_appointment">Book Consultation</span>
+    </button>
+
     <button type="button" class="toolbar-btn secondary" onclick="findHospitalForMySymptoms()">
         <span class="btn-icon">🏥</span><span data-i18n="hf_button_short">Find Hospital</span>
     </button>
@@ -250,6 +262,111 @@ It is not a substitute for professional medical advice.
 The core diagnostic system is powered by an Intelligent Clinical AI Engine,
 trained on comprehensive clinical symptom-to-condition healthcare data.
 </p>
+</section>
+
+<!-- Appointment Booking Modal -->
+<div id="appointmentModal" class="modal-overlay" style="display:none;">
+    <div class="modal-card appointment-modal-box">
+        <div class="modal-header">
+            <h2 style="margin:0; font-size:18px; display:flex; align-items:center; gap:8px;">
+                <span>📅</span>
+                <span data-i18n="booking_modal_title">Book Doctor Consultation</span>
+            </h2>
+            <button type="button" class="close-modal-btn" onclick="closeAppointmentModal()">&times;</button>
+        </div>
+
+        <div id="appointmentFormWrap">
+            <p class="modal-subtitle" data-i18n="booking_modal_subtitle" style="font-size:13px; color:var(--text-dim); margin:8px 0 16px;">
+                Instant hospital token slip generation for prioritized OPD consultation.
+            </p>
+
+            <div class="booking-grid">
+                <div class="booking-field">
+                    <label>👤 Patient Name</label>
+                    <input type="text" id="apptPatientName" placeholder="Patient Name">
+                </div>
+                <div class="booking-field">
+                    <label>📱 Contact Phone</label>
+                    <input type="tel" id="apptPhone" placeholder="Mobile Number (e.g. 9876543210)">
+                </div>
+                <div class="booking-field">
+                    <label>🩺 Specialist Required</label>
+                    <input type="text" id="apptSpecialist" placeholder="e.g. General Physician, Cardiologist">
+                </div>
+                <div class="booking-field">
+                    <label>🏥 Preferred Hospital / Clinic</label>
+                    <select id="apptHospitalSelect">
+                        <option value="Apollo Speciality Hospital">Apollo Speciality Hospital</option>
+                        <option value="Care Hospitals & Heart Institute">Care Hospitals & Heart Institute</option>
+                        <option value="KIMS Super Speciality Hospital">KIMS Super Speciality Hospital</option>
+                        <option value="Yashoda Healthcare Clinic">Yashoda Healthcare Clinic</option>
+                        <option value="City Community Health Center">City Community Health Center (OPD)</option>
+                    </select>
+                </div>
+                <div class="booking-field">
+                    <label>📅 Preferred Date</label>
+                    <input type="date" id="apptDate">
+                </div>
+                <div class="booking-field">
+                    <label>⏰ Consultation Time Slot</label>
+                    <select id="apptTimeSlot">
+                        <option value="10:00 AM - 10:30 AM (Morning)">10:00 AM - 10:30 AM (Morning)</option>
+                        <option value="11:30 AM - 12:00 PM (Morning)">11:30 AM - 12:00 PM (Morning)</option>
+                        <option value="02:30 PM - 03:00 PM (Afternoon)">02:30 PM - 03:00 PM (Afternoon)</option>
+                        <option value="04:30 PM - 05:00 PM (Evening)">04:30 PM - 05:00 PM (Evening)</option>
+                        <option value="06:30 PM - 07:00 PM (Evening)">06:30 PM - 07:00 PM (Evening)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="booking-field" style="margin-top:12px;">
+                <label>🏷️ Consultation Mode</label>
+                <div class="appt-mode-options">
+                    <label class="appt-mode-label">
+                        <input type="radio" name="apptMode" value="In-Person Hospital Visit" checked>
+                        <span>🏥 In-Person Hospital Visit</span>
+                    </label>
+                    <label class="appt-mode-label">
+                        <input type="radio" name="apptMode" value="Video Tele-Consultation">
+                        <span>💻 Online Video Tele-Consultation</span>
+                    </label>
+                </div>
+            </div>
+
+            <button type="button" class="primary-btn confirm-appt-btn" onclick="confirmAppointmentBooking()" style="margin-top:16px;">
+                🎟️ Confirm & Generate Digital Token Slip
+            </button>
+        </div>
+
+        <!-- Generated Token Slip -->
+        <div id="appointmentSlipWrap" style="display:none;"></div>
+    </div>
+</div>
+
+<!-- Install App Guide Modal -->
+<div id="installGuideModal" class="modal-overlay" style="display:none;">
+    <div class="modal-card" style="max-width:440px; text-align:center;">
+        <div class="modal-header">
+            <h2 style="margin:0; font-size:18px;">📲 Install MediGuide AI App</h2>
+            <button type="button" class="close-modal-btn" onclick="closeInstallGuideModal()">&times;</button>
+        </div>
+        <div style="padding:16px 0;">
+            <div style="font-size:48px; margin-bottom:12px;">🩺</div>
+            <h3 style="font-size:16px; margin-bottom:8px; color:var(--text);">Add to Home Screen or Desktop</h3>
+            <p style="font-size:13px; color:var(--text-dim); line-height:1.6; margin-bottom:20px;">
+                Launch MediGuide AI instantly anytime without typing the website address! Works seamlessly offline with saved history.
+            </p>
+            <div style="text-align:left; background:var(--bg); border:1px solid var(--glass-border); border-radius:12px; padding:14px; font-size:13px; line-height:1.7;">
+                <div><strong>🤖 Android / Chrome:</strong> Tap the <strong>⋮ (Menu)</strong> icon at the top right, then tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.</div>
+                <div style="margin-top:8px;"><strong>🍎 iPhone / iPad:</strong> Tap the <strong>Share (⎋)</strong> button at the bottom of Safari, then tap <strong>"Add to Home Screen"</strong>.</div>
+                <div style="margin-top:8px;"><strong>💻 Windows / Mac:</strong> Look for the <strong>Install (⊕)</strong> icon on the right side of your browser URL bar.</div>
+            </div>
+            <button type="button" class="primary-btn" onclick="closeInstallGuideModal()" style="margin-top:18px;">
+                Got it, Thanks! 👍
+            </button>
+        </div>
+    </div>
+</div>
 
 <footer>
 

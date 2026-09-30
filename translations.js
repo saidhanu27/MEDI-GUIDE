@@ -126,7 +126,14 @@ const TRANSLATIONS = {
         history_login_required: "Please log in to see your history.",
         history_empty: "No past checks yet. Analyze your symptoms to get started.",
         auth_connecting: "Connecting...",
-        auth_first_load_hint: "First load can take up to a minute if the server was asleep. Please wait..."
+        auth_first_load_hint: "First load can take up to a minute if the server was asleep. Please wait...",
+        btn_listen_report: "Listen to Report",
+        btn_stop_listening: "Stop Listening",
+        btn_book_appointment: "Book Consultation",
+        btn_install_app: "Install App",
+        booking_modal_title: "Book Doctor Consultation",
+        booking_modal_subtitle: "Instant hospital token slip generation for prioritized OPD consultation.",
+        token_slip_title: "Digital OPD Consultation Token"
     },
 
     hi: {
@@ -249,7 +256,14 @@ const TRANSLATIONS = {
         history_login_required: "अपना इतिहास देखने के लिए कृपया लॉगिन करें।",
         history_empty: "अभी तक कोई जांच नहीं। शुरू करने के लिए अपने लक्षणों का विश्लेषण करें।",
         auth_connecting: "कनेक्ट हो रहा है...",
-        auth_first_load_hint: "अगर सर्वर सो रहा था तो पहली बार लोड होने में एक मिनट तक लग सकता है। कृपया प्रतीक्षा करें..."
+        auth_first_load_hint: "अगर सर्वर सो रहा था तो पहली बार लोड होने में एक मिनट तक लग सकता है। कृपया प्रतीक्षा करें...",
+        btn_listen_report: "रिपोर्ट सुनें",
+        btn_stop_listening: "रोकें",
+        btn_book_appointment: "अपॉइंटमेंट बुक करें",
+        btn_install_app: "ऐप इंस्टॉल करें",
+        booking_modal_title: "डॉक्टर परामर्श बुक करें",
+        booking_modal_subtitle: "प्राथमिकता ओपीडी परामर्श के लिए त्वरित टोकन पर्ची।",
+        token_slip_title: "डिजिटल ओपीडी परामर्श टोकन"
     },
 
     te: {
@@ -372,7 +386,14 @@ const TRANSLATIONS = {
         history_login_required: "మీ history చూడాలంటే దయచేసి login చేయండి.",
         history_empty: "ఇంకా ఏ checks లేవు. మీ symptoms analyze చేసి start చేయండి.",
         auth_connecting: "కనెక్ట్ అవుతోంది...",
-        auth_first_load_hint: "Server sleep లో ఉంటే, మొదటి సారి load అవ్వడానికి ఒక నిమిషం పట్టొచ్చు. దయచేసి వేచి ఉండండి..."
+        auth_first_load_hint: "Server sleep లో ఉంటే, మొదటి సారి load అవ్వడానికి ఒక నిమిషం పట్టొచ్చు. దయచేసి వేచి ఉండండి...",
+        btn_listen_report: "రిపోర్ట్ వినండి",
+        btn_stop_listening: "వినడం ఆపండి",
+        btn_book_appointment: "అపాయింట్‌మెంట్ బుకింగ్",
+        btn_install_app: "యాప్ ఇన్‌స్టాల్",
+        booking_modal_title: "డాక్టర్ కన్సల్టేషన్ బుకింగ్",
+        booking_modal_subtitle: "ఓపీడీ కోసం తక్షణ డిజిటల్ టోకెన్ స్లిప్ జనరేషన్.",
+        token_slip_title: "డిజిటల్ ఓపీడీ కన్సల్టేషన్ టోకెన్"
     },
 
     ta: {
@@ -495,7 +516,14 @@ const TRANSLATIONS = {
         history_login_required: "உங்கள் வரலாற்றைக் காண உள்நுழையவும்.",
         history_empty: "இதுவரை சோதனைகள் இல்லை. தொடங்க உங்கள் அறிகுறிகளை பகுப்பாய்வு செய்யவும்.",
         auth_connecting: "இணைக்கிறது...",
-        auth_first_load_hint: "சேவையகம் தூங்கிக்கொண்டிருந்தால், முதல் முறை ஏற்ற ஒரு நிமிடம் ஆகலாம். தயவுசெய்து காத்திருக்கவும்..."
+        auth_first_load_hint: "சேவையகம் தூங்கிக்கொண்டிருந்தால், முதல் முறை ஏற்ற ஒரு நிமிடம் ஆகலாம். தயவுசெய்து காத்திருக்கவும்...",
+        btn_listen_report: "அறிக்கையைக் கேளுங்கள்",
+        btn_stop_listening: "நிறுத்து",
+        btn_book_appointment: "முன்பதிவு செய்யுங்கள்",
+        btn_install_app: "செயலியை நிறுவுங்கள்",
+        booking_modal_title: "மருத்துவர் ஆலோசனை முன்பதிவு",
+        booking_modal_subtitle: "முன்னுரிமை ஓபிடி ஆலோசனைக்கான உடனடி டோக்கன் சீட்டு.",
+        token_slip_title: "டிஜிட்டல் ஓபிடி ஆலோசனை டோக்கன்"
     },
 
     kn: {
@@ -618,7 +646,14 @@ const TRANSLATIONS = {
         history_login_required: "ನಿಮ್ಮ ಇತಿಹಾಸವನ್ನು ನೋಡಲು ದಯವಿಟ್ಟು ಲಾಗಿನ್ ಮಾಡಿ.",
         history_empty: "ಇನ್ನೂ ಯಾವುದೇ ಪರಿಶೀಲನೆಗಳಿಲ್ಲ. ಪ್ರಾರಂಭಿಸಲು ನಿಮ್ಮ ಲಕ್ಷಣಗಳನ್ನು ವಿಶ್ಲೇಷಿಸಿ.",
         auth_connecting: "ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...",
-        auth_first_load_hint: "ಸರ್ವರ್ ನಿದ್ರೆಯಲ್ಲಿದ್ದರೆ, ಮೊದಲ ಬಾರಿ ಲೋಡ್ ಆಗಲು ಒಂದು ನಿಮಿಷ ತೆಗೆದುಕೊಳ್ಳಬಹುದು. ದಯವಿಟ್ಟು ಕಾಯಿರಿ..."
+        auth_first_load_hint: "ಸರ್ವರ್ ನಿದ್ರೆಯಲ್ಲಿದ್ದರೆ, ಮೊದಲ ಬಾರಿ ಲೋಡ್ ಆಗಲು ಒಂದು ನಿಮಿಷ ತೆಗೆದುಕೊಳ್ಳಬಹುದು. ದಯವಿಟ್ಟು ಕಾಯಿರಿ...",
+        btn_listen_report: "ವರದಿ ಆಲಿಸಿ",
+        btn_stop_listening: "ನಿಲ್ಲಿಸಿ",
+        btn_book_appointment: "ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಕಾಯ್ದಿರಿಸಿ",
+        btn_install_app: "ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ",
+        booking_modal_title: "ವೈದ್ಯರ ಸಮಾಲೋಚನೆ ಕಾಯ್ದಿರಿಸುವಿಕೆ",
+        booking_modal_subtitle: "ಆದ್ಯತೆಯ ಒಪಿಡಿ ಸಮಾಲೋಚನೆಗಾಗಿ ತ್ವರಿತ ಟೋಕನ್ ಚೀಟಿ.",
+        token_slip_title: "ಡಿಜಿಟಲ್ ಒಪಿಡಿ ಸಮಾಲೋಚನಾ ಟೋಕನ್"
     },
 
     ml: {
@@ -741,7 +776,14 @@ const TRANSLATIONS = {
         history_login_required: "നിങ്ങളുടെ ചരിത്രം കാണാൻ ദയവായി ലോഗിൻ ചെയ്യുക.",
         history_empty: "ഇതുവരെ പരിശോധനകളൊന്നുമില്ല. ആരംഭിക്കാൻ നിങ്ങളുടെ ലക്ഷണങ്ങൾ വിശകലനം ചെയ്യുക.",
         auth_connecting: "ബന്ധിപ്പിക്കുന്നു...",
-        auth_first_load_hint: "സെർവർ ഉറങ്ങുകയായിരുന്നെങ്കിൽ, ആദ്യ ലോഡിന് ഒരു മിനിറ്റ് വരെ എടുത്തേക്കാം. ദയവായി കാത്തിരിക്കുക..."
+        auth_first_load_hint: "സെർവർ ഉറങ്ങുകയായിരുന്നെങ്കിൽ, ആദ്യ ലോഡിന് ഒരു മിനിറ്റ് വരെ എടുത്തേക്കാം. ദയവായി കാത്തിരിക്കുക...",
+        btn_listen_report: "റിപ്പോർട്ട് കേൾക്കുക",
+        btn_stop_listening: "നിർത്തുക",
+        btn_book_appointment: "അപ്പോയിന്റ്മെന്റ് ബുക്ക് ചെയ്യുക",
+        btn_install_app: "ആപ്പ് ഇൻസ്റ്റാൾ ചെയ്യുക",
+        booking_modal_title: "ഡോക്ടർ കൺസൾട്ടേഷൻ ബുക്കിംഗ്",
+        booking_modal_subtitle: "മുൻഗണനാ ഒപിഡി കൺസൾട്ടേഷനായി തൽക്ഷണ ടോക്കൺ സ്ലിപ്പ്.",
+        token_slip_title: "ഡിജിറ്റൽ ഒപിഡി കൺസൾട്ടേഷൻ ടോക്കൺ"
     },
 };
 
