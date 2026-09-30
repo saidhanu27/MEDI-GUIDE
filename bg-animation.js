@@ -54,13 +54,13 @@
             this.x = Math.random() * width;
             this.y = initial ? Math.random() * height : height + 40;
             this.size = Math.random() * 9 + 11; // 11px - 20px realistic size
-            this.speedY = Math.random() * 0.45 + 0.3; // gentle float upward
+            this.speedY = Math.random() * 0.20 + 0.18; // smooth, medium float upward
             this.swayAngle = Math.random() * Math.PI * 2;
-            this.swaySpeed = Math.random() * 0.02 + 0.012;
-            this.swayAmplitude = Math.random() * 0.7 + 0.35;
+            this.swaySpeed = Math.random() * 0.010 + 0.006;
+            this.swayAmplitude = Math.random() * 0.6 + 0.3;
 
-            // Authentic Cardiac Cycle: "Lub-Dub" Rhythm
-            this.heartRate = Math.random() * 0.035 + 0.045;
+            // Authentic Cardiac Cycle: "Lub-Dub" Rhythm (Calm medium tempo)
+            this.heartRate = Math.random() * 0.020 + 0.025;
             this.heartPhase = Math.random() * Math.PI * 2;
             this.baseAlpha = Math.random() * 0.3 + 0.6; // High visibility glow (0.6 - 0.9)
         }
@@ -170,12 +170,12 @@
             this.x = Math.random() * width;
             this.y = Math.random() * height;
             this.radius = Math.random() * 2.5 + 1.8;
-            this.vx = (Math.random() - 0.5) * 0.8;
-            this.vy = (Math.random() - 0.5) * 0.8;
+            this.vx = (Math.random() - 0.5) * 0.35;
+            this.vy = (Math.random() - 0.5) * 0.35;
             this.isCross = Math.random() < 0.25;
             this.crossSize = Math.random() * 6 + 5;
             this.alpha = Math.random() * 0.4 + 0.55;
-            this.pulseSpeed = Math.random() * 0.025 + 0.015;
+            this.pulseSpeed = Math.random() * 0.012 + 0.008;
             this.pulseVal = Math.random() * Math.PI;
         }
 
@@ -250,7 +250,7 @@
     // =========================================================
 
     let ecgX = -120;
-    const ecgSpeed = 4.2;
+    const ecgSpeed = 2.2;
     const ecgYPercent = 0.68;
 
     function drawEcgLine(isDark) {
