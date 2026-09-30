@@ -876,8 +876,10 @@ body.dark-mode .toolbar-btn:hover{
 ========================================================= */
 
 .info-bar{
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    align-items:center;
     gap:14px;
     background:var(--card-bg);
     border:1px solid var(--glass-border);
@@ -888,6 +890,8 @@ body.dark-mode .toolbar-btn:hover{
 }
 
 .info-item{
+    flex:1 1 120px;
+    min-width:110px;
     text-align:center;
 }
 
@@ -1042,14 +1046,15 @@ body.dark-mode .toolbar-btn:hover{
 }
 
 .top-dashboard{
-    display:grid;
-    grid-template-columns:1fr 1fr;
+    display:flex;
+    flex-wrap:wrap;
     gap:20px;
     margin-bottom:25px;
 }
 
 .dashboard-card,
 .risk-card{
+    flex:1 1 300px;
     background:var(--glass);
     border:1px solid var(--glass-border);
     border-radius:20px;
@@ -1081,6 +1086,78 @@ body.dark-mode .toolbar-btn:hover{
     text-transform:uppercase;
 }
 
+/* Modern SVG Health Score Gauge (100% reliable across browsers, print, and PDF) */
+.score-svg-gauge-wrap{
+    position:relative;
+    width:150px;
+    height:150px;
+    margin:12px auto;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.score-svg-gauge{
+    width:100%;
+    height:100%;
+}
+
+.score-gauge-bg{
+    stroke:rgba(120,120,120,.2);
+}
+
+body.dark-mode .score-gauge-bg{
+    stroke:rgba(255,255,255,.12);
+}
+
+.score-gauge-fill{
+    transition:stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1), stroke .3s ease;
+}
+
+.score-gauge-fill.healthy{
+    stroke:var(--green);
+    filter:drop-shadow(0 0 10px rgba(0,255,163,.45));
+}
+
+.score-gauge-fill.care{
+    stroke:var(--amber);
+    filter:drop-shadow(0 0 10px rgba(255,200,87,.45));
+}
+
+.score-gauge-fill.risk{
+    stroke:var(--red);
+    filter:drop-shadow(0 0 10px rgba(255,61,104,.45));
+}
+
+.score-gauge-center{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    pointer-events:none;
+}
+
+.score-gauge-num{
+    font-size:32px;
+    font-weight:700;
+    font-family:'Space Grotesk',sans-serif;
+    color:var(--text);
+    line-height:1;
+}
+
+.score-gauge-denom{
+    font-size:12px;
+    font-weight:600;
+    color:var(--text-dim);
+    margin-top:3px;
+}
+
+/* Fallback score circle */
 .score-circle{
     --progress:0deg;
     width:160px;
@@ -2280,4 +2357,86 @@ body:not(.dark-mode) #installAppNavBtn:hover {
 }
 .token-slip-actions button {
     flex: 1;
+}
+
+/* =========================================================
+   Print Stylesheet for Clean Medical Reports (Ctrl + P)
+========================================================= */
+@media print {
+    #medicalBgCanvas,
+    header,
+    nav,
+    .hero,
+    .patient-grid,
+    .symptoms-wrapper,
+    .action-toolbar,
+    #loading,
+    #doctorHospitalResult,
+    #about,
+    footer,
+    #authScreen,
+    .modal-overlay,
+    button {
+        display: none !important;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    body::before {
+        display: none !important;
+    }
+
+    main {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .card {
+        background: #ffffff !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    #result {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    .info-bar,
+    .dashboard-card,
+    .risk-card,
+    .ml-card,
+    .result-card,
+    .ai-section {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        color: #0f172a !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .info-label,
+    .card-meta-hint,
+    .risk-advisory-text,
+    .ai-section p,
+    .ai-section li {
+        color: #334155 !important;
+    }
+
+    .ai-section h2 {
+        background: #f1f5f9 !important;
+        color: #0284c7 !important;
+        border-color: #cbd5e1 !important;
+    }
 }

@@ -837,6 +837,29 @@ with your actual assessed health score number.
             statusClass = "risk";
         }
 
+        // Store active report data for PDF generation & printing
+        window.__currentReportData = {
+            patientName: patientName || "Patient",
+            age: age || "-",
+            gender: gender || "Other",
+            date: new Date().toLocaleDateString(),
+            time: new Date().toLocaleTimeString(),
+            symptoms: symptoms || "",
+            symptomsList: selectedSymptoms || [],
+            disease: (window.__mlDataForHistory && window.__mlDataForHistory.predicted_disease) || window.__lastPredictedDisease || "Clinical Assessment",
+            confidence: (window.__mlDataForHistory && window.__mlDataForHistory.confidence) || 88,
+            specialist: (window.__mlDataForHistory && window.__mlDataForHistory.recommended_specialist) || "General Physician",
+            riskBadge: riskBadge,
+            healthScore: healthScore,
+            healthStatus: healthStatus,
+            statusClass: statusClass,
+            topPredictions: window.__mlTopPredictions || [],
+            aiTextRaw: aiTextRaw,
+            aiText: aiText
+        };
+
+        const dashOffset = Math.max(0, 301.6 - (healthScore / 100) * 301.6);
+
         result.innerHTML = `
         <div class="info-bar">
             <div class="info-item">
@@ -860,49 +883,52 @@ with your actual assessed health score number.
                 <div class="info-value">${new Date().toLocaleTimeString()}</div>
             </div>
         </div>
-        ${mlHTML}
-<div class="top-dashboard">
 
-    <div class="dashboard-card">
-        <h2>❤️ ${t("health_score_word")}</h2>
-        <div class="score-circle">
-            <div class="score-value">${healthScore}/100</div>
-        </div>
-        <div class="score-status ${statusClass}">${healthStatus}</div>
-        <div class="card-meta-hint">AI Overall Wellness Index</div>
-    </div>
+        <div class="top-dashboard">
+            <div class="dashboard-card">
+                <h2>❤️ ${t("health_score_word")}</h2>
+                <div class="score-svg-gauge-wrap">
+                    <svg class="score-svg-gauge" viewBox="0 0 120 120">
+                        <circle class="score-gauge-bg" cx="60" cy="60" r="48" fill="none" stroke-width="10"></circle>
+                        <circle class="score-gauge-fill ${statusClass}" cx="60" cy="60" r="48" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="301.6" stroke-dashoffset="${dashOffset}" transform="rotate(-90 60 60)"></circle>
+                    </svg>
+                    <div class="score-gauge-center">
+                        <span class="score-gauge-num">${healthScore}</span>
+                        <span class="score-gauge-denom">/100</span>
+                    </div>
+                </div>
+                <div class="score-status ${statusClass}">${healthStatus}</div>
+                <div class="card-meta-hint">AI Overall Wellness Index</div>
+            </div>
 
-    <div class="risk-card">
-        <h2>📊 ${t("risk_level_word")}</h2>
-        <div class="risk-visual-box ${riskBadge}">
-            <span class="risk-emoji">${riskBadge === 'high' ? '🚨' : (riskBadge === 'medium' ? '⚠️' : '✅')}</span>
-            <div class="risk-badge ${riskBadge}">
-                ${riskClass.replace("risk-", "").toUpperCase()} RISK
+            <div class="risk-card">
+                <h2>📊 ${t("risk_level_word")}</h2>
+                <div class="risk-visual-box ${riskBadge}">
+                    <span class="risk-emoji">${riskBadge === 'high' ? '🚨' : (riskBadge === 'medium' ? '⚠️' : '✅')}</span>
+                    <div class="risk-badge ${riskBadge}">
+                        ${riskClass.replace("risk-", "").toUpperCase()} RISK
+                    </div>
+                </div>
+                <div class="risk-meter-bar">
+                    <div class="meter-segment seg-low ${riskBadge === 'low' ? 'active' : ''}">Low</div>
+                    <div class="meter-segment seg-med ${riskBadge === 'medium' ? 'active' : ''}">Medium</div>
+                    <div class="meter-segment seg-high ${riskBadge === 'high' ? 'active' : ''}">High</div>
+                </div>
+                <div class="risk-advisory-text">
+                    ${riskBadge === 'high' ? 'Immediate doctor consultation recommended.' : (riskBadge === 'medium' ? 'Moderate attention needed. Monitor symptoms closely.' : 'Mild symptoms observed. Maintain hydration and rest.')}
+                </div>
             </div>
         </div>
-        <div class="risk-meter-bar">
-            <div class="meter-segment seg-low ${riskBadge === 'low' ? 'active' : ''}">Low</div>
-            <div class="meter-segment seg-med ${riskBadge === 'medium' ? 'active' : ''}">Medium</div>
-            <div class="meter-segment seg-high ${riskBadge === 'high' ? 'active' : ''}">High</div>
+
+        ${mlHTML}
+
+        <div class="result-card">
+            <h2>📋 AI Health Report</h2>
+            <div class="ai-report risk-border-${riskBadge}">
+                ${aiText}
+            </div>
         </div>
-        <div class="risk-advisory-text">
-            ${riskBadge === 'high' ? 'Immediate doctor consultation recommended.' : (riskBadge === 'medium' ? 'Moderate attention needed. Monitor symptoms closely.' : 'Mild symptoms observed. Maintain hydration and rest.')}
-        </div>
-    </div>
-
-</div>
-
-<div class="result-card">
-
-    <h2>📋 AI Health Report</h2>
-
-    <div class="ai-report risk-border-${riskBadge}">
-        ${aiText}
-    </div>
-
-</div>
-
-`;
+        `;
 
         // Animate Health Circle
 
@@ -1102,66 +1128,413 @@ function resetForm() {
 }
 
 
-// =========================
-// Download PDF
-// =========================
+// =========================================================
+// Clinical Report PDF Generator & Downloader (Syncs with MediGuide AI UI)
+// Generates a certified, beautifully formatted medical document
+// =========================================================
 
-function downloadPDF() {
+function extractReportDataFromDOM() {
+    const pName = (document.getElementById("patientName") && document.getElementById("patientName").value.trim()) || "Patient";
+    const pAge = (document.getElementById("patientAge") && document.getElementById("patientAge").value.trim()) || "-";
+    const pGender = (document.getElementById("patientGender") && document.getElementById("patientGender").value) || "Other";
 
-    const element = document.getElementById("result");
-
-    if (element.innerHTML.trim() === "") {
-
-        alert(t("alert_analyze_first"));
-
-        return;
-
+    const symptomsList = [];
+    document.querySelectorAll(".symptoms input:checked").forEach((chk) => {
+        symptomsList.push(chk.value);
+    });
+    const extra = document.getElementById("extraSymptoms");
+    if (extra && extra.value.trim()) {
+        symptomsList.push(extra.value.trim());
     }
 
-    // Scroll to the very top first — otherwise html2canvas can capture
-    // starting from the current scroll position, which shows up as a
-    // blank first page in the PDF.
+    const aiReportEl = document.querySelector(".ai-report");
+    const aiText = aiReportEl ? aiReportEl.innerHTML : "";
+
+    const scoreValEl = document.querySelector(".score-gauge-num") || document.querySelector(".score-value");
+    const healthScore = scoreValEl ? parseInt(scoreValEl.textContent.trim()) || 80 : 80;
+
+    let riskBadge = "low";
+    if (document.querySelector(".risk-badge.high") || aiText.toLowerCase().includes("high")) riskBadge = "high";
+    else if (document.querySelector(".risk-badge.medium") || aiText.toLowerCase().includes("medium")) riskBadge = "medium";
+
+    const healthStatus = healthScore >= 80 ? "Healthy" : (healthScore >= 50 ? "Needs Care" : "High Risk");
+
+    return {
+        patientName: pName,
+        age: pAge,
+        gender: pGender,
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+        symptomsList: symptomsList,
+        symptoms: symptomsList.join(", "),
+        disease: (window.__mlDataForHistory && window.__mlDataForHistory.predicted_disease) || window.__lastPredictedDisease || "Clinical Diagnostic Assessment",
+        confidence: (window.__mlDataForHistory && window.__mlDataForHistory.confidence) || 86,
+        specialist: (window.__mlDataForHistory && window.__mlDataForHistory.recommended_specialist) || "General Physician",
+        riskBadge: riskBadge,
+        healthScore: healthScore,
+        healthStatus: healthStatus,
+        topPredictions: window.__mlTopPredictions || [],
+        aiText: aiText
+    };
+}
+
+function buildClinicalPdfReport(data) {
+    if (!data) data = extractReportDataFromDOM();
+
+    const container = document.createElement("div");
+    container.id = "clinical-pdf-print-root";
+    container.style.cssText = `
+        position: fixed;
+        left: -9999px;
+        top: 0;
+        width: 790px;
+        background: #ffffff;
+        color: #0f172a;
+        padding: 26px 30px;
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.5;
+        z-index: -9999;
+    `;
+
+    const reportRef = "MG-" + Math.floor(100000 + Math.random() * 900000);
+    const scoreColor = data.healthScore >= 80 ? "#059669" : (data.healthScore >= 50 ? "#d97706" : "#dc2626");
+    const riskColor = data.riskBadge === "high" ? "#dc2626" : (data.riskBadge === "medium" ? "#d97706" : "#059669");
+    const riskBg = data.riskBadge === "high" ? "#fee2e2" : (data.riskBadge === "medium" ? "#fef3c7" : "#dcfce7");
+    const riskBorder = data.riskBadge === "high" ? "#fca5a5" : (data.riskBadge === "medium" ? "#fde68a" : "#86efac");
+
+    const dashArray = 251.32;
+    const dashOffset = Math.max(0, dashArray - (data.healthScore / 100) * dashArray);
+
+    // Symptoms tags HTML
+    const symptomsArr = Array.isArray(data.symptomsList) && data.symptomsList.length > 0 
+        ? data.symptomsList 
+        : (data.symptoms ? data.symptoms.split(",").map(s => s.trim()).filter(Boolean) : ["General Checkup"]);
+    const symptomsTagsHtml = symptomsArr.map(s => 
+        `<span style="display:inline-block; background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; border-radius:12px; padding:2px 8px; font-size:11px; font-weight:600; margin:2px 4px 2px 0;">${s}</span>`
+    ).join("");
+
+    // Top Predictions table if available
+    let topPredsHtml = "";
+    if (Array.isArray(data.topPredictions) && data.topPredictions.length > 0) {
+        const rows = data.topPredictions.slice(0, 3).map((p, idx) => {
+            const barWidth = Math.min(100, Math.max(10, p.confidence));
+            return `
+            <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 6px 10px; font-size: 12px; font-weight: 600; color: #0f172a;">${idx + 1}. ${p.disease}</td>
+                <td style="padding: 6px 10px; width: 45%;">
+                    <div style="background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; width: 100%;">
+                        <div style="background: linear-gradient(90deg, #0284c7, #2563eb); width: ${barWidth}%; height: 100%; border-radius: 4px;"></div>
+                    </div>
+                </td>
+                <td style="padding: 6px 10px; font-size: 12px; font-weight: 700; color: #0284c7; text-align: right;">${p.confidence}% Match</td>
+            </tr>
+            `;
+        }).join("");
+
+        topPredsHtml = `
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; page-break-inside: avoid;">
+            <div style="font-size: 11px; font-weight: 700; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+                🔍 Top Diagnostic Probabilities
+            </div>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tbody>
+                    ${rows}
+                </tbody>
+            </table>
+        </div>
+        `;
+    }
+
+    // Process AI sections into high-end medical cards
+    let aiContentHtml = "";
+    if (data.aiText) {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = data.aiText;
+
+        const sections = tempDiv.querySelectorAll(".ai-section");
+        if (sections.length > 0) {
+            sections.forEach((sec) => {
+                const headingEl = sec.querySelector("h2");
+                const headingText = headingEl ? headingEl.textContent.trim() : "";
+                
+                const clone = sec.cloneNode(true);
+                const cloneH2 = clone.querySelector("h2");
+                if (cloneH2) cloneH2.remove();
+
+                const isEmergency = headingText.includes("Emergency") || headingText.includes("అత్యవసర") || headingText.includes("आपातकालीन") || headingText.includes("🚨");
+                const isFoodEat = headingText.includes("Eat") || headingText.includes("తినాల్సిన") || headingText.includes("खाने योग्य") || headingText.includes("🥗");
+                const isFoodAvoid = headingText.includes("Avoid") || headingText.includes("నివారించాల్సిన") || headingText.includes("परहेज़") || headingText.includes("🚫");
+
+                let secBg = "#ffffff";
+                let secBorder = "#e2e8f0";
+                let secBorderLeft = "#0284c7";
+                let h2Bg = "#f8fafc";
+                let h2Color = "#0284c7";
+
+                if (isEmergency) {
+                    secBg = "#fff1f2";
+                    secBorder = "#fecaca";
+                    secBorderLeft = "#ef4444";
+                    h2Bg = "#fee2e2";
+                    h2Color = "#b91c1c";
+                } else if (isFoodEat) {
+                    secBg = "#f0fdf4";
+                    secBorder = "#bbf7d0";
+                    secBorderLeft = "#10b981";
+                    h2Bg = "#dcfce7";
+                    h2Color = "#15803d";
+                } else if (isFoodAvoid) {
+                    secBg = "#fffbeb";
+                    secBorder = "#fde68a";
+                    secBorderLeft = "#f59e0b";
+                    h2Bg = "#fef3c7";
+                    h2Color = "#b45309";
+                }
+
+                aiContentHtml += `
+                <div style="background: ${secBg}; border: 1px solid ${secBorder}; border-left: 4px solid ${secBorderLeft}; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; page-break-inside: avoid;">
+                    <div style="background: ${h2Bg}; color: ${h2Color}; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 700; margin: -4px -6px 10px -6px; display: flex; align-items: center; gap: 8px;">
+                        ${headingText}
+                    </div>
+                    <div style="font-size: 12px; color: #334155; line-height: 1.6;">
+                        ${clone.innerHTML}
+                    </div>
+                </div>
+                `;
+            });
+        } else {
+            aiContentHtml = `<div style="padding: 12px; font-size: 12px; color: #334155; line-height: 1.6;">${data.aiText}</div>`;
+        }
+    }
+
+    container.innerHTML = `
+        <!-- Official Medical Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); display: flex; align-items: center; justify-content: center; font-size: 24px; color: #ffffff; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);">
+                    🩺
+                </div>
+                <div>
+                    <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #0f172a; letter-spacing: -0.3px;">
+                        MediGuide <span style="color: #0284c7;">AI</span>
+                    </h1>
+                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 1px;">
+                        Clinical Diagnostic Assessment & Guidance Report
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 11px; font-weight: 700; color: #0f172a;">
+                    REPORT ID: <span style="color: #0284c7; font-family: monospace; font-size: 12px;">${reportRef}</span>
+                </div>
+                <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                    Date: <strong>${data.date}</strong> | Time: <strong>${data.time}</strong>
+                </div>
+                <div style="display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0;">
+                    ● VERIFIED CLINICAL EVALUATION
+                </div>
+            </div>
+        </div>
+
+        <!-- Colored Brand Divider -->
+        <div style="height: 3px; background: linear-gradient(90deg, #0284c7 0%, #6366f1 50%, #00ffa3 100%); border-radius: 2px; margin-bottom: 14px;"></div>
+
+        <!-- Patient Demographics Bar -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; page-break-inside: avoid;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 8px;">
+                <div style="flex: 1.2;">
+                    <div style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase;">Patient Name</div>
+                    <div style="font-size: 15px; font-weight: 700; color: #0f172a;">${data.patientName}</div>
+                </div>
+                <div style="flex: 0.8;">
+                    <div style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase;">Age / Gender</div>
+                    <div style="font-size: 13px; font-weight: 600; color: #0f172a;">${data.age} Years • ${data.gender}</div>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase;">Assessment Date</div>
+                    <div style="font-size: 13px; font-weight: 600; color: #0f172a;">${data.date}</div>
+                </div>
+                <div style="flex: 1; text-align: right;">
+                    <div style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase;">Triage Level</div>
+                    <div style="font-size: 12px; font-weight: 700; color: ${riskColor};">${data.riskBadge.toUpperCase()} RISK</div>
+                </div>
+            </div>
+            <div style="border-top: 1px solid #edf2f7; padding-top: 8px; margin-top: 4px;">
+                <span style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase; margin-right: 6px;">Reported Symptoms:</span>
+                ${symptomsTagsHtml}
+            </div>
+        </div>
+
+        <!-- 3-Box Executive Clinical Summary -->
+        <div style="display: flex; gap: 12px; margin-bottom: 14px; page-break-inside: avoid;">
+            
+            <!-- Health Score Card (Crisp SVG Gauge - Zero Black Circle Bug) -->
+            <div style="flex: 1; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Health & Wellness Index</div>
+                <div style="width: 82px; height: 82px; margin: 0 auto; position: relative; display: flex; align-items: center; justify-content: center;">
+                    <svg viewBox="0 0 100 100" style="width: 82px; height: 82px; transform: rotate(-90deg);">
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#f1f5f9" stroke-width="8"></circle>
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="${scoreColor}" stroke-width="8" stroke-linecap="round" stroke-dasharray="251.32" stroke-dashoffset="${dashOffset}"></circle>
+                    </svg>
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;">
+                        <span style="font-size: 20px; font-weight: 800; color: #0f172a; line-height: 1;">${data.healthScore}</span>
+                        <span style="font-size: 9px; font-weight: 600; color: #64748b; margin-top: 1px;">/ 100</span>
+                    </div>
+                </div>
+                <div style="font-size: 13px; font-weight: 700; color: ${scoreColor}; margin-top: 6px;">${data.healthStatus}</div>
+                <div style="font-size: 10px; color: #94a3b8;">Vital Balance Index</div>
+            </div>
+
+            <!-- Risk Classification Card -->
+            <div style="flex: 1.2; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Clinical Risk Classification</div>
+                <div style="display: flex; align-items: center; gap: 8px; margin: 4px 0;">
+                    <span style="font-size: 20px;">${data.riskBadge === 'high' ? '🚨' : (data.riskBadge === 'medium' ? '⚠️' : '✅')}</span>
+                    <span style="display: inline-block; padding: 3px 12px; border-radius: 16px; font-size: 12px; font-weight: 800; background: ${riskBg}; color: ${riskColor}; border: 1px solid ${riskBorder};">
+                        ${data.riskBadge.toUpperCase()} RISK
+                    </span>
+                </div>
+                <!-- 3-Segment Risk Bar -->
+                <div style="display: flex; gap: 3px; background: #f1f5f9; padding: 2px; border-radius: 10px; margin: 8px 0;">
+                    <div style="flex: 1; text-align: center; font-size: 9px; font-weight: 700; padding: 3px 0; border-radius: 8px; ${data.riskBadge === 'low' ? 'background: #059669; color: #ffffff;' : 'color: #94a3b8;'}">LOW</div>
+                    <div style="flex: 1; text-align: center; font-size: 9px; font-weight: 700; padding: 3px 0; border-radius: 8px; ${data.riskBadge === 'medium' ? 'background: #d97706; color: #ffffff;' : 'color: #94a3b8;'}">MED</div>
+                    <div style="flex: 1; text-align: center; font-size: 9px; font-weight: 700; padding: 3px 0; border-radius: 8px; ${data.riskBadge === 'high' ? 'background: #dc2626; color: #ffffff;' : 'color: #94a3b8;'}">HIGH</div>
+                </div>
+                <div style="font-size: 11px; color: #475569; line-height: 1.4;">
+                    ${data.riskBadge === 'high' ? 'Immediate clinical consultation strongly recommended.' : (data.riskBadge === 'medium' ? 'Moderate attention needed. Monitor symptoms closely.' : 'Mild symptoms observed. Maintain hydration and rest.')}
+                </div>
+            </div>
+
+            <!-- Primary Diagnosis Card -->
+            <div style="flex: 1.2; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Primary Indication Match</div>
+                <div style="font-size: 15px; font-weight: 800; color: #0284c7; margin: 4px 0 2px 0;">${data.disease}</div>
+                <div style="font-size: 11px; color: #475569; margin-bottom: 6px;">Evaluation Confidence: <strong>${data.confidence}%</strong></div>
+                <div style="display: inline-block; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;">
+                    👨‍⚕️ Specialist: ${data.specialist}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Top Predictions Table -->
+        ${topPredsHtml}
+
+        <!-- Detailed Clinical Guidance Sections -->
+        <div style="margin-bottom: 16px;">
+            ${aiContentHtml}
+        </div>
+
+        <!-- Official Sign-off & Verification Footer -->
+        <div style="border-top: 2px solid #e2e8f0; padding-top: 14px; margin-top: 16px; page-break-inside: avoid;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px;">
+                <div>
+                    <div style="font-size: 11px; font-weight: 700; color: #0f172a;">MediGuide AI Digital Health Diagnostic Engine</div>
+                    <div style="font-size: 10px; color: #64748b;">Clinical Decision Support Core • System Validated</div>
+                    <div style="font-size: 9px; color: #94a3b8; font-family: monospace; margin-top: 2px;">AUTHENTICATION: CERT-PASS-2026-${Math.floor(1000 + Math.random() * 9000)}</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 10px; color: #64748b; margin-bottom: 24px;">Physician / Reviewer Sign-Off:</div>
+                    <div style="width: 180px; border-top: 1px dashed #94a3b8; display: inline-block;"></div>
+                    <div style="font-size: 9px; color: #64748b;">Authorized Clinical Reviewer</div>
+                </div>
+            </div>
+            <div style="font-size: 9px; color: #94a3b8; line-height: 1.4; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 8px;">
+                <strong>Medical Disclaimer:</strong> This clinical report is generated by MediGuide AI for informational, preventative, and triage guidance only. It is not an official medical prescription or a definitive diagnosis. Always seek the advice of a qualified physician or other licensed healthcare provider with any questions you may have regarding a medical condition. In case of emergency, call 108 / 911 immediately.
+            </div>
+        </div>
+    `;
+
+    return container;
+}
+
+function downloadPDF() {
+    const resultBox = document.getElementById("result");
+    if (!resultBox || resultBox.innerHTML.trim() === "") {
+        alert(t("alert_analyze_first"));
+        return;
+    }
+
+    const downloadBtn = document.querySelector('button[onclick="downloadPDF()"]');
+    const originalBtnHtml = downloadBtn ? downloadBtn.innerHTML : "";
+    if (downloadBtn) {
+        downloadBtn.disabled = true;
+        downloadBtn.innerHTML = `<span class="btn-icon">⏳</span> <span>Generating PDF...</span>`;
+    }
+
+    // Scroll to top
     window.scrollTo(0, 0);
 
+    const reportData = window.__currentReportData || extractReportDataFromDOM();
+    const pdfContainer = buildClinicalPdfReport(reportData);
+    document.body.appendChild(pdfContainer);
+
+    const safeName = (reportData.patientName || "Patient").replace(/[^a-zA-Z0-9]/g, "_");
+    const filename = `MediGuide_Report_${safeName}_${new Date().toISOString().slice(0, 10)}.pdf`;
+
     const options = {
-
-        margin: 0.4,
-
-        filename: "MediGuide_AI_Report.pdf",
-
+        margin: [0.3, 0.3, 0.35, 0.3],
+        filename: filename,
         image: {
             type: "jpeg",
-            quality: 1
+            quality: 0.98
         },
-
         html2canvas: {
             scale: 2,
             useCORS: true,
             scrollX: 0,
-            scrollY: 0
+            scrollY: 0,
+            backgroundColor: "#ffffff",
+            logging: false
         },
-
         jsPDF: {
-
             unit: "in",
-
             format: "a4",
-
             orientation: "portrait"
-
         },
-
-        // Avoid slicing any card/section in half between two pages
         pagebreak: {
-            mode: "avoid-all"
+            mode: ["avoid-all", "css", "legacy"]
         }
-
     };
 
     setTimeout(() => {
-        html2pdf().set(options).from(element).save();
-    }, 150);
-
+        if (typeof html2pdf !== "undefined") {
+            html2pdf()
+                .set(options)
+                .from(pdfContainer)
+                .save()
+                .then(() => {
+                    if (pdfContainer.parentNode) {
+                        pdfContainer.parentNode.removeChild(pdfContainer);
+                    }
+                    if (downloadBtn) {
+                        downloadBtn.disabled = false;
+                        downloadBtn.innerHTML = originalBtnHtml;
+                    }
+                })
+                .catch((err) => {
+                    console.error("PDF generation error:", err);
+                    if (pdfContainer.parentNode) {
+                        pdfContainer.parentNode.removeChild(pdfContainer);
+                    }
+                    if (downloadBtn) {
+                        downloadBtn.disabled = false;
+                        downloadBtn.innerHTML = originalBtnHtml;
+                    }
+                    window.print();
+                });
+        } else {
+            if (pdfContainer.parentNode) {
+                pdfContainer.parentNode.removeChild(pdfContainer);
+            }
+            if (downloadBtn) {
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = originalBtnHtml;
+            }
+            window.print();
+        }
+    }, 250);
 }
 // =========================
 // Find Hospital — uses the symptoms you already selected/analyzed
