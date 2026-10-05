@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediGuide AI - Project Architecture & Presentation Chart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --secondary: #2563eb;
+            --accent: #00ffa3;
+            --emerald: #10b981;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --dark-bg: #070d18;
+            --card-bg: #0f172a;
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-main);
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        .chart-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #0b1329;
+            border: 2px solid rgba(2, 132, 199, 0.35);
+            border-radius: 24px;
+            padding: 32px 36px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(2, 132, 199, 0.15);
+        }
+
+        /* Poster Header */
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 20px;
+            margin-bottom: 28px;
+        }
+
+        .header-title-box {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-badge {
+            width: 58px;
+            height: 58px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 8px 20px rgba(2, 132, 199, 0.4);
+        }
+
+        .header-title-box h1 {
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+        }
+
+        .header-title-box h1 span {
+            color: #00e5ff;
+        }
+
+        .header-title-box p {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        .header-meta {
+            text-align: right;
+        }
+
+        .meta-tag {
+            display: inline-block;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--emerald);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .meta-text {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Architecture Section */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .section-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00e5ff;
+            letter-spacing: 0.2px;
+        }
+
+        .section-badge {
+            background: rgba(0, 229, 255, 0.12);
+            color: #00e5ff;
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        /* Architecture Blocks */
+        .architecture-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .arch-layer {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 20px 16px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            transition: transform 0.25s ease, border-color 0.25s ease;
+        }
+
+        .arch-layer:hover {
+            transform: translateY(-4px);
+            border-color: #00e5ff;
+        }
+
+        .layer-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 10px;
+        }
+
+        .layer-icon {
+            font-size: 24px;
+        }
+
+        .layer-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .layer-num {
+            font-size: 10px;
+            color: #00e5ff;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .layer-items {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .layer-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .layer-card strong {
+            display: block;
+            color: #38bdf8;
+            font-size: 11.5px;
+            margin-bottom: 2px;
+        }
+
+        .layer-card p {
+            color: var(--text-muted);
+            font-size: 10.5px;
+        }
+
+        /* Flow Arrow Between Layers */
+        .flow-banner {
+            background: linear-gradient(90deg, #0284c7 0%, #2563eb 50%, #00ffa3 100%);
+            border-radius: 12px;
+            padding: 10px 18px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #050b14;
+            box-shadow: 0 4px 18px rgba(2, 132, 199, 0.3);
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .flow-arrow {
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        /* Bottom Feature Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .feature-card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .feature-card li {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            position: relative;
+            padding-left: 18px;
+        }
+
+        .feature-card li::before {
+            content: "✔";
+            position: absolute;
+            left: 0;
+            color: var(--emerald);
+            font-weight: 800;
+        }
+
+        /* Footer / Print Actions */
+        .chart-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 18px;
+        }
+
+        .footer-note {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .print-btn {
+            background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+            color: #ffffff;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .print-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #0f172a !important;
+                padding: 0 !important;
+            }
+            .chart-container {
+                border: none !important;
+                box-shadow: none !important;
+                background: #ffffff !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+            .header-title-box h1,
+            .layer-title,
+            .feature-card h3 {
+                color: #0f172a !important;
+            }
+            .header-title-box h1 span {
+                color: #0284c7 !important;
+            }
+            .arch-layer,
+            .feature-card {
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+            }
+            .layer-card {
+                background: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+            }
+            .layer-card strong {
+                color: #0284c7 !important;
+            }
+            .layer-card p,
+            .feature-card li {
+                color: #334155 !important;
+            }
+            .print-btn {
+                display: none !important;
+            }
+            .flow-banner {
+                background: #e2e8f0 !important;
+                color: #0f172a !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="chart-container">
+    <!-- Header -->
+    <header class="chart-header">
+        <div class="header-title-box">
+            <div class="brand-badge">🩺</div>
+            <div>
+                <h1>MediGuide <span>AI</span></h1>
+                <p>Intelligent Clinical Diagnostic & Healthcare Assistant • System Architecture Chart</p>
+            </div>
+        </div>
+        <div class="header-meta">
+            <div class="meta-tag">CLINICAL DECISION SUPPORT SYSTEM</div>
+            <div class="meta-text">Python Flask • Progressive Web App • SQLite • Cloudflare</div>
+        </div>
+    </header>
+
+    <!-- Architecture Section Title -->
+    <div class="section-header">
+        <h2>System Architecture & Multi-Layer Pipeline</h2>
+        <span class="section-badge">5-Tier Decoupled Flow</span>
+    </div>
+
+    <!-- 5-Tier Architecture Grid -->
+    <div class="architecture-grid">
+        <!-- Layer 1 -->
+        <div class="arch-layer">
+            <div class="layer-top">
+                <span class="layer-icon">🖥️</span>
+                <div>
+                    <div class="layer-num">Tier 1</div>
+                    <div class="layer-title">Presentation & UI</div>
+                </div>
+            </div>
+            <ul class="layer-items">
+                <li class="layer-card">
+                    <strong>Glassmorphism UI</strong>
+                    <p>Light & Dark responsive medical theme with seamless styling.</p>
+                </li>
+                <li class="layer-card">
+                    <strong>Voice Interface</strong>
+                    <p>Speech-to-Text input + Speech synthesis voice report.</p>
+                </li>
+                <li class="layer-card">
+                    <strong>Live Canvas</strong>
+                    <p>Interactive 60fps ECG wave, neural mesh & cardiac hearts.</p>
+                </li>
+                <li class="layer-card">
+                    <strong>Multilingual Core</strong>
+                    <p>English, Telugu (తెలుగు), and Hindi (हिन्दी) localization.</p>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Layer 2 -->
+        <div class="arch-layer">
+            <div class="layer-top">
+                <span class="layer-icon">🌐</span>
+                <div>
+                    <div class="layer-num">Tier 2</div>
+                    <div class="layer-title">API Gateway</div>
+                </div>
+            </div>
+            <ul class="layer-items">
+                <li class="layer-card">
+                    <strong>Flask Server (5050)</strong>
+                    <p>RESTful API endpoints routing JSON data asynchronously.</p>
+                </li>
+                <li class="layer-card">
+                    <strong>Predict Route</strong>
+                    <p>/predict endpoint handling multi-symptom triage requests.</p>
+                </li>
+                <li class="layer-card">
+                    <strong>Auth & Session</strong>
+                    <p>User sessions, secure login & signup handling.</p>
+                </li>
+                <li class="layer-card">
+                    <strong>Cloudflare Tunnel</strong>
+                    <p>Zero-trust HTTPS tunnel for global secure access.</p>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Layer 3 -->
+        <div class="arch-layer">
+            <div class="layer-top">
+                <span class="layer-icon">🧠</span>
+                <div>
+                    <div class="layer-num">Tier 3</div>
+                    <div class="layer-title">Clinical Engine</div>
+                </div>
+            </div>
+            <ul class="layer-items">
+                <li class="layer-card">
+                    <strong>Symptom Triage</strong>
+                    <p>Multi-factor clinical correlation & condition identification.</p>
+                </li>
+                <li class="layer-card">
+                    <strong>Risk Stratification</strong>
+                    <p>Low / Medium / High severity triage classification.</p>
+                </li>
+                <li class="layer-card">
+                    <strong>Wellness Index</strong>
+                    <p>0 - 100 Health Score computed with vital parameters.</p>
+                </li>
+                <li class="layer-card">
+                    <strong>Dual Fallback Core</strong>
+                    <p>Online LLM mode + 100% offline verified clinical DB.</p>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Layer 4 -->
+        <div class="arch-layer">
+            <div class="layer-top">
+                <span class="layer-icon">⚙️</span>
+                <div>
+                    <div class="layer-num">Tier 4</div>
+                    <div class="layer-title">Clinical Services</div>
+                </div>
+            </div>
+            <ul class="layer-items">
+                <li class="layer-card">
+                    <strong>Certified PDF Report</strong>
+                    <p>Hospital letterhead, vector SVG gauges & dietary guide.</p>
+                </li>
+                <li class="layer-card">
+                    <strong>OPD Token System</strong>
+                    <p>Appointment booking with instant digital token slip & QR.</p>
+                </li>
+                <li class="layer-card">
+                    <strong>Hospital Locator</strong>
+                    <p>Specialty mapping & instant Google Maps routing.</p>
+                </li>
+                <li class="layer-card">
+                    <strong>History Tracker</strong>
+                    <p>Patient evaluation log with status badges & review.</p>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Layer 5 -->
+        <div class="arch-layer">
+            <div class="layer-top">
+                <span class="layer-icon">💾</span>
+                <div>
+                    <div class="layer-num">Tier 5</div>
+                    <div class="layer-title">Data Storage</div>
+                </div>
+            </div>
+            <ul class="layer-items">
+                <li class="layer-card">
+                    <strong>SQLite Database</strong>
+                    <p>Encrypted credentials, appointment tokens & history.</p>
+                </li>
+                <li class="layer-card">
+                    <strong>Local Cache</strong>
+                    <p>Offline symptom database & active patient sessions.</p>
+                </li>
+                <li class="layer-card">
+                    <strong>PWA Service Worker</strong>
+                    <p>Cached static assets for instant offline app loading.</p>
+                </li>
+                <li class="layer-card">
+                    <strong>Audit Records</strong>
+                    <p>Timestamped digital health evaluation histories.</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Data Flow Banner -->
+    <div class="flow-banner">
+        <div class="flow-step">👤 Patient Input (Voice / Form)</div>
+        <div class="flow-arrow">➔</div>
+        <div class="flow-step">🌐 Flask REST API</div>
+        <div class="flow-arrow">➔</div>
+        <div class="flow-step">🧠 Clinical Triage & Risk Matrix</div>
+        <div class="flow-arrow">➔</div>
+        <div class="flow-step">📄 Certified PDF & Audio Summary</div>
+        <div class="flow-arrow">➔</div>
+        <div class="flow-step">🏥 OPD Token & Hospital Routing</div>
+    </div>
+
+    <!-- 3 Bottom Innovation Cards -->
+    <div class="features-grid">
+        <div class="feature-card">
+            <h3>🎙️ Voice & Multilingual Triage</h3>
+            <ul>
+                <li>Hands-free regional speech input in English, Telugu, and Hindi.</li>
+                <li>Gentle text-to-speech audio reader for immediate clinical guidance.</li>
+                <li>Zero barrier for rural, elderly, and differently-abled users.</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h3>🛡️ Zero-Failure Offline Engine</h3>
+            <ul>
+                <li>Dual-mode execution architecture with built-in clinical database.</li>
+                <li>100% functional even during complete network disconnectivity.</li>
+                <li>Progressive Web App (PWA) installable on desktop and mobile.</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h3>📑 Clinical Report & OPD Tokens</h3>
+            <ul>
+                <li>Vector SVG circular gauge eliminating all black circle rendering bugs.</li>
+                <li>Two-column dietary nutrition matrix (foods to eat vs. foods to avoid).</li>
+                <li>Digital OPD Token Slip with instant QR authentication code.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Chart Footer -->
+    <footer class="chart-footer">
+        <div class="footer-note">
+            © 2026 MediGuide AI • Capstone Health Informatics Project • System Architecture & Technical Specifications
+        </div>
+        <button class="print-btn" onclick="window.print()">
+            🖨️ Print / Save Chart as PDF
+        </button>
+    </footer>
+</div>
+
+</body>
+</html>
