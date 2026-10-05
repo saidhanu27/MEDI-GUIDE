@@ -544,9 +544,14 @@
         <div class="footer-text">
             © 2026 MediGuide AI • Health Informatics Project • Architecture & Specifications Chart
         </div>
-        <button class="print-btn" onclick="window.print()">
-            🖨️ Print / Save Chart as PDF
-        </button>
+        <div style="display: flex; gap: 10px;">
+            <a href="/download_chart_pdf" download="MediGuide_AI_Project_Presentation_Chart.pdf" class="print-btn" style="text-decoration:none; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                📥 Download PDF Chart
+            </a>
+            <button class="print-btn" onclick="window.print()">
+                🖨️ Print Poster
+            </button>
+        </div>
     </footer>
 </div>
 

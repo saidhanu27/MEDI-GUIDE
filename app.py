@@ -85,6 +85,21 @@ def download_app_zip():
     )
 
 
+@app.route("/download_chart_pdf")
+@app.route("/download-chart-pdf")
+def download_chart_pdf():
+    """Serves the generated Project Presentation Chart PDF directly as a download attachment."""
+    pdf_path = os.path.join(FRONTEND_DIR, "MediGuide_AI_Project_Presentation_Chart.pdf")
+    if os.path.isfile(pdf_path):
+        return send_file(
+            pdf_path,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name="MediGuide_AI_Project_Presentation_Chart.pdf"
+        )
+    return jsonify({"error": "Chart PDF not found"}), 404
+
+
 @app.route("/<path:filename>")
 def serve_frontend_files(filename):
     """
