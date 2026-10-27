@@ -1,4 +1,4 @@
-// =========================================================
+﻿// =========================================================
 // MediGuide AI — Translations (i18n)
 // =========================================================
 // Supported languages: English, Hindi, Telugu, Tamil, Kannada, Malayalam
@@ -833,6 +833,15 @@ function setLanguage(langCode) {
     const langSelect = document.getElementById("languageSelect");
     if (langSelect) {
         langSelect.value = langCode;
+    }
+
+    // Automatically re-render active report in the new language if currently displayed!
+    if (window.__currentReportData && typeof window.renderReportUI === "function") {
+        try {
+            window.renderReportUI(window.__currentReportData, langCode);
+        } catch (err) {
+            console.warn("Could not re-render report on language change:", err);
+        }
     }
 
 }

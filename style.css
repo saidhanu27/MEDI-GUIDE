@@ -2440,3 +2440,111 @@ body:not(.dark-mode) #installAppNavBtn:hover {
         border-color: #cbd5e1 !important;
     }
 }
+
+
+/* =========================================================
+   Diagnostic Match Bars & Canvas Chart Styling
+   ========================================================= */
+.diagnostic-matches-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 14px 0 16px;
+}
+
+.diag-match-item {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 10px 14px;
+    transition: all 0.25s ease;
+}
+
+.diag-match-item:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(0, 229, 255, 0.35);
+    transform: translateY(-1px);
+}
+
+.diag-match-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.diag-match-name {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.diag-orig-name {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: normal;
+    margin-left: 6px;
+}
+
+.diag-match-pct {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--cyan);
+}
+
+.diag-match-track {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.diag-match-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.diag-match-bar.bar-color-0 {
+    background: linear-gradient(90deg, #00e5ff, #00b4d8);
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+}
+
+.diag-match-bar.bar-color-1 {
+    background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+}
+
+.diag-match-bar.bar-color-2 {
+    background: linear-gradient(90deg, #00ffa3, #10b981);
+    box-shadow: 0 0 10px rgba(0, 255, 163, 0.4);
+}
+
+.chart-canvas-box {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.chart-canvas-box canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
+
+.diag-primary-disease {
+    color: var(--cyan);
+    font-weight: 700;
+    font-size: 1.05em;
+}
+
+.diag-orig-tag {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: normal;
+    margin-left: 4px;
+}
