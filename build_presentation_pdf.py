@@ -155,11 +155,10 @@ def create_chart_pdf():
     ]
 
     work_p = [
-        Paragraph("<b>2. Working (Step-by-Step)</b>", sec_heading),
-        Paragraph("• <b>Step 1 (Input):</b> Patient enters age/gender and speaks or selects symptoms in Telugu, Hindi, or English.", bullet_style),
-        Paragraph("• <b>Step 2 (Clinical Triage):</b> Engine evaluates multi-symptom combinations against clinical hallmark patterns.", bullet_style),
-        Paragraph("• <b>Step 3 (Risk & Score):</b> Stratifies risk into Low/Med/High and computes a 0-100 Health Score gauge.", bullet_style),
-        Paragraph("• <b>Step 4 (Care & Services):</b> Generates certified PDF report, audio summary, and OPD token slip.", bullet_style)
+        Paragraph("<b>2. Working (In Brief)</b>", sec_heading),
+        Paragraph("• <b>1. Input:</b> Patient speaks or selects symptoms in Telugu, Hindi, or English.", bullet_style),
+        Paragraph("• <b>2. Triage:</b> Engine predicts condition, risk level (Low/Med/High), and 0-100 health score.", bullet_style),
+        Paragraph("• <b>3. Output:</b> Instant voice guidance, certified PDF report, and digital OPD token slip.", bullet_style)
     ]
 
     top_grid = Table([[prob_p, work_p]], colWidths=[3.6*inch, 3.6*inch])

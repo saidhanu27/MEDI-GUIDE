@@ -20,20 +20,9 @@
 [Patient Input] ──► [Clinical Triage] ──► [Risk & Score] ──► [Actionable Output]
 ```
 
-1. **Patient Input:**
-   * Patient enters basic demographic info (Name, Age, Gender).
-   * Speaks symptoms naturally via microphone in **Telugu, Hindi, or English**, or selects from symptom checklist.
-2. **Intelligent Clinical Triage:**
-   * Python Flask backend evaluates multi-symptom combinations against clinical hallmark patterns.
-   * Matches primary indications and identifies the recommended specialist (e.g., General Physician, Cardiologist, Pulmonologist).
-3. **Risk Stratification & Health Score:**
-   * Categorizes case severity into **Low Risk**, **Medium Risk**, or **High Risk**.
-   * Computes an **AI Wellness Index (0 to 100)** rendered via an SVG circular vector gauge.
-4. **Actionable Care & Services:**
-   * **🔊 Voice Summary:** Plays a gentle, calm verbal summary of clinical guidance.
-   * **📄 Official PDF Report:** Generates a printable A4 diagnostic report with dietary guidelines (foods to eat vs. avoid) and physician sign-off line.
-   * **🎟️ OPD Token Slip:** Books in-person OPD or tele-consultation with an instant digital token slip and QR code.
-   * **🏥 Hospital Locator:** Maps condition directly to specialized local hospitals on Google Maps.
+1. **1. Input:** Patient enters basic details and speaks or selects symptoms in Telugu, Hindi, or English.
+2. **2. Clinical Triage & Score:** Engine evaluates symptoms, predicts condition, assigns risk (Low/Med/High), and calculates 0-100 Health Score.
+3. **3. Output & Care:** Instant voice guidance, certified A4 medical PDF report, and digital OPD token slip booking.
 
 ---
 
