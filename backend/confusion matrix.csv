@@ -1,0 +1,19 @@
+,Allergic Reaction,Anxiety,Arthritis,Asthma,Bronchitis,COVID-19,Chickenpox,Common Cold,Dengue,Flu,Food Poisoning,Gastritis,Heart Related Issue,Malaria,Migraine,Sinusitis,Typhoid,Urinary Tract Infection
+Allergic Reaction,116,6,4,14,1,1,27,7,0,0,1,2,2,2,3,2,1,11
+Anxiety,5,60,12,9,2,2,2,5,0,1,1,9,51,0,21,4,0,16
+Arthritis,2,2,178,0,0,0,1,0,2,1,0,1,0,2,4,0,0,7
+Asthma,3,10,1,130,9,2,1,4,0,0,0,1,34,2,0,2,0,1
+Bronchitis,2,0,2,39,55,43,1,31,0,10,0,0,6,2,0,7,0,2
+COVID-19,1,5,2,4,18,94,4,12,3,34,0,0,3,9,0,5,5,1
+Chickenpox,28,0,0,0,0,0,145,1,7,2,0,0,0,1,1,3,5,7
+Common Cold,1,1,5,1,15,3,1,135,0,14,0,0,1,0,2,16,2,3
+Dengue,3,0,13,0,0,2,13,0,110,10,1,1,0,35,1,2,9,0
+Flu,0,1,1,0,3,25,8,16,10,110,0,0,0,13,3,6,3,1
+Food Poisoning,1,2,0,0,0,0,0,0,1,0,147,26,0,5,4,0,8,6
+Gastritis,0,1,4,0,1,0,0,3,0,0,29,125,2,1,5,0,7,22
+Heart Related Issue,2,11,3,24,2,1,0,0,0,0,0,6,146,1,3,0,0,1
+Malaria,0,0,3,0,1,3,10,0,28,18,9,1,2,103,4,2,11,5
+Migraine,1,9,3,0,0,0,1,2,0,0,0,8,2,7,159,5,0,3
+Sinusitis,0,2,2,4,6,3,1,53,1,3,0,1,0,7,28,76,0,13
+Typhoid,1,1,4,0,1,2,19,2,14,9,24,3,1,29,2,0,75,13
+Urinary Tract Infection,2,1,6,0,0,0,0,0,0,1,11,44,3,16,10,4,8,94

@@ -1,0 +1,396 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MediGuide AI - Health Assistant</title>
+
+    <!-- PWA Settings -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#00f2fe">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MediGuide AI">
+    <link rel="apple-touch-icon" href="/assets/icon-192.png">
+    <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
+
+    <link rel="stylesheet" href="style.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<canvas id="medicalBgCanvas"></canvas>
+
+<div id="authScreen">
+    <div class="auth-box">
+
+        <h1>🩺 <span>MediGuide AI</span></h1>
+
+        <div class="auth-tabs">
+            <button type="button" id="loginTabBtn" class="auth-tab active" onclick="switchAuthTab('login')" data-i18n="auth_login_tab">Login</button>
+            <button type="button" id="signupTabBtn" class="auth-tab" onclick="switchAuthTab('signup')" data-i18n="auth_signup_tab">Sign Up</button>
+        </div>
+
+        <div id="loginForm" class="auth-form">
+            <input type="text" id="loginUsername" data-i18n-placeholder="auth_username_or_email" placeholder="Username or Email" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+            <input type="password" id="loginPassword" data-i18n-placeholder="auth_password" placeholder="Password" autocomplete="current-password">
+            <button type="button" id="loginSubmitBtn" class="primary-btn" onclick="handleLogin()" data-i18n="auth_login_button">Login</button>
+        </div>
+
+        <div id="signupForm" class="auth-form" style="display:none;">
+            <input type="text" id="signupUsername" data-i18n-placeholder="auth_username" placeholder="Username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+            <input type="email" id="signupEmail" data-i18n-placeholder="auth_email" placeholder="Email" autocomplete="email" autocapitalize="none" autocorrect="off" spellcheck="false">
+            <input type="password" id="signupPassword" data-i18n-placeholder="auth_password_min" placeholder="Password (min 6 characters)" autocomplete="new-password">
+            <button type="button" id="signupSubmitBtn" class="primary-btn" onclick="handleSignup()" data-i18n="auth_signup_button">Create Account</button>
+        </div>
+
+        <p id="authError" class="auth-error"></p>
+
+        <div style="text-align: center; margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+            <button type="button" class="toolbar-btn primary" onclick="quickLoginDemo()" style="width: 100%; justify-content: center; padding: 11px 16px; font-weight: 600; cursor: pointer; background: linear-gradient(135deg, #00f2fe, #4facfe); color: #040814; border: none; border-radius: 8px;">
+                ⚡ 1-Click Quick Login (Dhanush)
+            </button>
+            <button type="button" class="toolbar-btn secondary" onclick="continueAsGuest()" style="width: 100%; justify-content: center; padding: 10px 16px; font-weight: 500; cursor: pointer;">
+                👤 Continue as Guest / Demo Mode
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<div id="welcomeScreen" style="display:none;">
+    <div class="welcome-box">
+        <h1>🩺 <span data-i18n="welcome_title_prefix">Welcome to</span> <span>MediGuide AI</span></h1>
+        <p data-i18n="welcome_subtitle">Your AI powered health assistant. Enter your symptoms and get instant guidance.</p>
+        <button type="button" onclick="closeWelcome()"><span data-i18n="welcome_button">Next →</span></button>
+    </div>
+</div>
+<header>
+    <nav>
+       <div class="logo">
+    <span class="logo-icon">🩺</span>
+    <span>MediGuide AI</span>
+</div>
+        <ul>
+            <li><a href="#" data-i18n="nav_home">Home</a></li>
+            <li><a href="#checker" data-i18n="nav_checker">Symptom Checker</a></li>
+            <li><a href="#history" data-i18n="nav_history" onclick="loadHistory()">History</a></li>
+            <li><a href="#about" data-i18n="nav_about">About</a></li>
+        </ul>
+
+        <div class="nav-controls">
+
+            <span id="loggedInUserLabel" class="logged-in-label"></span>
+
+            <select id="languageSelect" onchange="setLanguage(this.value)">
+                <option value="en">🇬🇧 English</option>
+                <option value="hi">🇮🇳 हिंदी</option>
+                <option value="te">🇮🇳 తెలుగు</option>
+                <option value="ta">🇮🇳 தமிழ்</option>
+                <option value="kn">🇮🇳 ಕನ್ನಡ</option>
+                <option value="ml">🇮🇳 മലയാളం</option>
+            </select>
+
+            <button type="button" id="installAppNavBtn" class="install-pwa-btn" onclick="handlePwaInstallClick()" title="Install MediGuide App">
+                📲 <span id="installBtnText" data-i18n="btn_install_app">Install App</span>
+            </button>
+
+            <button type="button" id="themeBtn" onclick="toggleTheme()">
+                🌙 <span data-i18n="theme_dark">Dark Mode</span>
+            </button>
+
+            <button type="button" id="logoutBtn" onclick="handleLogout()" data-i18n="auth_logout_button">Logout</button>
+
+        </div>
+    </nav>
+
+    <div class="hero">
+        <h1 data-i18n="hero_title">AI Powered Health Assistant</h1>
+        <p data-i18n="hero_subtitle">Enter your symptoms and receive AI-powered health guidance.</p>
+        <div class="algo-badge">
+            <span class="algo-dot"></span>
+            <span data-i18n="algo_badge_text">Powered by Intelligent Clinical AI Diagnostic System</span>
+        </div>
+    </div>
+</header>
+
+<section id="checker" class="container">
+
+    <div class="card">
+
+        <h2 data-i18n="section_patient_details">Patient Details</h2>
+        <div class="patient-grid">
+            <input
+            type="text"
+            id="patientName"
+            data-i18n-placeholder="placeholder_patient_name"
+            placeholder="Enter Patient Name">
+            <input
+            type="number"
+            id="age"
+            name="age"
+            data-i18n-placeholder="placeholder_age"
+            placeholder="Enter Age"
+            min="1"
+            max="120"
+            step="1"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            autocomplete="off">
+
+            <select id="gender">
+                <option value="" data-i18n="gender_select">Select Gender</option>
+                <option value="Male" data-i18n="gender_male">Male</option>
+                <option value="Female" data-i18n="gender_female">Female</option>
+                <option value="Other" data-i18n="gender_other">Other</option>
+            </select>
+        </div>
+
+        <h2 data-i18n="section_select_symptoms">Select Symptoms</h2>
+
+        <div class="symptoms">
+
+            <label><input type="checkbox" value="Fever"> <span data-i18n="symptom_fever">Fever</span></label>
+
+            <label><input type="checkbox" value="Headache"> <span data-i18n="symptom_headache">Headache</span></label>
+
+            <label><input type="checkbox" value="Cough"> <span data-i18n="symptom_cough">Cough</span></label>
+
+            <label><input type="checkbox" value="Body Pain"> <span data-i18n="symptom_bodypain">Body Pain</span></label>
+
+            <label><input type="checkbox" value="Vomiting"> <span data-i18n="symptom_vomiting">Vomiting</span></label>
+
+            <label><input type="checkbox" value="Stomach Pain"> <span data-i18n="symptom_stomachpain">Stomach Pain</span></label>
+
+            <label><input type="checkbox" value="Chest Pain"> <span data-i18n="symptom_chestpain">Chest Pain</span></label>
+
+            <label><input type="checkbox" value="Shortness of Breath"> <span data-i18n="symptom_breath">Shortness of Breath</span></label>
+
+            <label><input type="checkbox" value="Fatigue"> <span data-i18n="symptom_fatigue">Fatigue</span></label>
+
+            <label><input type="checkbox" value="Dizziness"> <span data-i18n="symptom_dizziness">Dizziness</span></label>
+
+            <label><input type="checkbox" value="Sore Throat"> <span data-i18n="symptom_sorethroat">Sore Throat</span></label>
+
+            <label><input type="checkbox" value="Skin Rash"> <span data-i18n="symptom_skinrash">Skin Rash</span></label>
+
+            <label><input type="checkbox" value="Joint Pain"> <span data-i18n="symptom_jointpain">Joint Pain</span></label>
+
+            <label><input type="checkbox" value="Diarrhea"> <span data-i18n="symptom_diarrhea">Diarrhea</span></label>
+
+            <label><input type="checkbox" value="Loss of Appetite"> <span data-i18n="symptom_lossofappetite">Loss of Appetite</span></label>
+
+        </div>
+
+        <h3 data-i18n="section_additional_symptoms">Additional Symptoms</h3>
+
+        <textarea id="extraSymptoms" data-i18n-placeholder="placeholder_extra_symptoms" placeholder="Type any additional symptoms..."></textarea>
+
+<div class="action-toolbar">
+
+    <button type="button" id="voiceBtn" class="toolbar-btn secondary" onclick="startVoiceInput()">
+        <span class="btn-icon">🎤</span><span data-i18n="btn_speak">Speak Symptoms</span>
+    </button>
+
+    <button type="button" class="toolbar-btn secondary" onclick="resetForm()">
+        <span class="btn-icon">🔄</span><span data-i18n="btn_reset">Reset</span>
+    </button>
+
+</div>
+
+<button type="button" id="analyzeBtn" class="primary-btn" onclick="analyzeSymptoms(event)">
+    <span class="btn-icon">🔍</span><span data-i18n="btn_analyze">Analyze Symptoms</span>
+</button>
+
+<div id="loading" style="display:none;">
+    <div class="spinner"></div>
+    <p data-i18n="loading_text">Analyzing symptoms with AI...</p>
+</div>
+
+<div class="action-toolbar">
+
+    <button type="button" class="toolbar-btn secondary" onclick="downloadPDF()">
+        <span class="btn-icon">📄</span><span data-i18n="btn_download">Save Report (PDF)</span>
+    </button>
+
+    <button type="button" id="voiceListenBtn" class="toolbar-btn secondary" onclick="toggleReadAloud()">
+        <span class="btn-icon">🔊</span><span id="voiceListenLabel" data-i18n="btn_listen_report">Listen to Report</span>
+    </button>
+
+    <button type="button" id="bookApptBtn" class="toolbar-btn secondary" onclick="openAppointmentModal()">
+        <span class="btn-icon">📅</span><span data-i18n="btn_book_appointment">Book Consultation</span>
+    </button>
+
+    <button type="button" class="toolbar-btn secondary" onclick="findHospitalForMySymptoms()">
+        <span class="btn-icon">🏥</span><span data-i18n="hf_button_short">Find Hospital</span>
+    </button>
+
+</div>
+
+<div id="doctorHospitalResult"></div>
+<div id="result"></div>
+        <br>
+
+
+
+    </div>
+
+</section>
+
+<section id="history" class="container">
+
+    <div class="card">
+
+        <h2 data-i18n="history_title">📜 Your Past Checks</h2>
+        <p class="hf-subtitle" data-i18n="history_subtitle">
+            Only visible to you — your last 5 symptom checks.
+        </p>
+
+        <div id="historyList"></div>
+
+    </div>
+
+</section>
+
+<section id="about">
+
+<h2 data-i18n="about_title">About MediGuide AI</h2>
+
+<p data-i18n="about_text">
+MediGuide AI is an AI-powered symptom analysis system developed for educational purposes.
+It provides possible health conditions, general medicine information, food suggestions,
+and guidance on the type of doctor to consult.
+It is not a substitute for professional medical advice.
+</p>
+
+<p class="about-algo-line" data-i18n="about_algo_text">
+The core diagnostic system is powered by an Intelligent Clinical AI Engine,
+trained on comprehensive clinical symptom-to-condition healthcare data.
+</p>
+</section>
+
+<!-- Appointment Booking Modal -->
+<div id="appointmentModal" class="modal-overlay" style="display:none;">
+    <div class="modal-card appointment-modal-box">
+        <div class="modal-header">
+            <h2 style="margin:0; font-size:18px; display:flex; align-items:center; gap:8px;">
+                <span>📅</span>
+                <span data-i18n="booking_modal_title">Book Doctor Consultation</span>
+            </h2>
+            <button type="button" class="close-modal-btn" onclick="closeAppointmentModal()">&times;</button>
+        </div>
+
+        <div id="appointmentFormWrap">
+            <p class="modal-subtitle" data-i18n="booking_modal_subtitle" style="font-size:13px; color:var(--text-dim); margin:8px 0 16px;">
+                Instant hospital token slip generation for prioritized OPD consultation.
+            </p>
+
+            <div class="booking-grid">
+                <div class="booking-field">
+                    <label>👤 Patient Name</label>
+                    <input type="text" id="apptPatientName" placeholder="Patient Name">
+                </div>
+                <div class="booking-field">
+                    <label>🎂 Patient Age (Years)</label>
+                    <input type="number" id="apptAge" placeholder="Age (e.g. 28)" min="1" max="120" inputmode="numeric">
+                </div>
+                <div class="booking-field">
+                    <label>📱 Contact Phone</label>
+                    <input type="tel" id="apptPhone" placeholder="Mobile Number (e.g. 9876543210)">
+                </div>
+                <div class="booking-field">
+                    <label>🩺 Specialist Required</label>
+                    <input type="text" id="apptSpecialist" placeholder="e.g. General Physician, Cardiologist">
+                </div>
+                <div class="booking-field">
+                    <label>🏥 Preferred Hospital / Clinic</label>
+                    <select id="apptHospitalSelect">
+                        <option value="Apollo Speciality Hospital">Apollo Speciality Hospital</option>
+                        <option value="Care Hospitals & Heart Institute">Care Hospitals & Heart Institute</option>
+                        <option value="KIMS Super Speciality Hospital">KIMS Super Speciality Hospital</option>
+                        <option value="Yashoda Healthcare Clinic">Yashoda Healthcare Clinic</option>
+                        <option value="City Community Health Center">City Community Health Center (OPD)</option>
+                    </select>
+                </div>
+                <div class="booking-field">
+                    <label>📅 Preferred Date</label>
+                    <input type="date" id="apptDate">
+                </div>
+                <div class="booking-field">
+                    <label>⏰ Consultation Time Slot</label>
+                    <select id="apptTimeSlot">
+                        <option value="10:00 AM - 10:30 AM (Morning)">10:00 AM - 10:30 AM (Morning)</option>
+                        <option value="11:30 AM - 12:00 PM (Morning)">11:30 AM - 12:00 PM (Morning)</option>
+                        <option value="02:30 PM - 03:00 PM (Afternoon)">02:30 PM - 03:00 PM (Afternoon)</option>
+                        <option value="04:30 PM - 05:00 PM (Evening)">04:30 PM - 05:00 PM (Evening)</option>
+                        <option value="06:30 PM - 07:00 PM (Evening)">06:30 PM - 07:00 PM (Evening)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="booking-field" style="margin-top:12px;">
+                <label>🏷️ Consultation Mode</label>
+                <div class="appt-mode-options">
+                    <label class="appt-mode-label">
+                        <input type="radio" name="apptMode" value="In-Person Hospital Visit" checked>
+                        <span>🏥 In-Person Hospital Visit</span>
+                    </label>
+                    <label class="appt-mode-label">
+                        <input type="radio" name="apptMode" value="Video Tele-Consultation">
+                        <span>💻 Online Video Tele-Consultation</span>
+                    </label>
+                </div>
+            </div>
+
+            <button type="button" class="primary-btn confirm-appt-btn" onclick="confirmAppointmentBooking()" style="margin-top:16px;">
+                🎟️ Confirm & Generate Digital Token Slip
+            </button>
+        </div>
+
+        <!-- Generated Token Slip -->
+        <div id="appointmentSlipWrap" style="display:none;"></div>
+    </div>
+</div>
+
+<!-- Install App Guide Modal -->
+<div id="installGuideModal" class="modal-overlay" style="display:none;">
+    <div class="modal-card" style="max-width:440px; text-align:center;">
+        <div class="modal-header">
+            <h2 style="margin:0; font-size:18px;">📲 Install MediGuide AI App</h2>
+            <button type="button" class="close-modal-btn" onclick="closeInstallGuideModal()">&times;</button>
+        </div>
+        <div style="padding:16px 0;">
+            <div style="font-size:48px; margin-bottom:12px;">🩺</div>
+            <h3 style="font-size:16px; margin-bottom:8px; color:var(--text);">Add to Home Screen or Desktop</h3>
+            <p style="font-size:13px; color:var(--text-dim); line-height:1.6; margin-bottom:20px;">
+                Launch MediGuide AI instantly anytime without typing the website address! Works seamlessly offline with saved history.
+            </p>
+            <div style="text-align:left; background:var(--bg); border:1px solid var(--glass-border); border-radius:12px; padding:14px; font-size:13px; line-height:1.7;">
+                <div><strong>🤖 Android / Chrome:</strong> Tap the <strong>⋮ (Menu)</strong> icon at the top right, then tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.</div>
+                <div style="margin-top:8px;"><strong>🍎 iPhone / iPad:</strong> Tap the <strong>Share (⎋)</strong> button at the bottom of Safari, then tap <strong>"Add to Home Screen"</strong>.</div>
+                <div style="margin-top:8px;"><strong>💻 Windows / Mac:</strong> Look for the <strong>Install (⊕)</strong> icon on the right side of your browser URL bar.</div>
+            </div>
+            <button type="button" class="primary-btn" onclick="closeInstallGuideModal()" style="margin-top:18px;">
+                Got it, Thanks! 👍
+            </button>
+        </div>
+    </div>
+</div>
+
+<footer>
+
+<span data-i18n="footer_text">© 2026 MediGuide AI | Educational Project</span>
+
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="translations.js"></script>
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<script src="script.js"></script>
+<script src="bg-animation.js"></script>
+
+</body>
+</html>

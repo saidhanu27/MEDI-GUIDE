@@ -29,7 +29,13 @@ import re
 import database
 
 # Frontend files (index.html, script.js, style.css, etc.) live in the same directory as app.py
-FRONTEND_DIR = os.path.abspath(os.path.dirname(__file__))
+CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
+if os.path.exists(os.path.abspath(os.path.join(CURRENT_DIR, '..', 'frontend', 'index.html'))):
+    FRONTEND_DIR = os.path.abspath(os.path.join(CURRENT_DIR, '..', 'frontend'))
+elif os.path.exists(os.path.join(CURRENT_DIR, 'frontend', 'index.html')):
+    FRONTEND_DIR = os.path.join(CURRENT_DIR, 'frontend')
+else:
+    FRONTEND_DIR = CURRENT_DIR
 
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path="")
 CORS(app)  # harmless to keep even when same-origin; avoids issues if opened separately

@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediGuide AI - Project Presentation Chart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --accent: #00e5ff;
+            --emerald: #10b981;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --purple: #8b5cf6;
+            --dark-bg: #070d18;
+            --card-bg: #0f172a;
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-main);
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        .chart-poster {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #0b1329;
+            border: 2px solid rgba(2, 132, 199, 0.35);
+            border-radius: 20px;
+            padding: 28px 32px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Poster Header */
+        .poster-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 16px;
+            margin-bottom: 22px;
+        }
+
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+        }
+
+        .brand-title h1 {
+            font-size: 26px;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .brand-title h1 span {
+            color: var(--accent);
+        }
+
+        .brand-title p {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-top: 3px;
+        }
+
+        .header-tag {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--emerald);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* Section Headings */
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 18px 20px;
+        }
+
+        /* 1. Problem Statement */
+        .problem-box {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .problem-item {
+            display: flex;
+            gap: 10px;
+            font-size: 12.5px;
+            line-height: 1.5;
+            color: var(--text-muted);
+        }
+
+        .problem-item strong {
+            color: #ffffff;
+        }
+
+        .problem-item .icon {
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        /* 2. Architecture Diagram (Compact) */
+        .arch-container {
+            margin-bottom: 22px;
+        }
+
+        .arch-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            position: relative;
+        }
+
+        .arch-box {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 14px 12px;
+            text-align: center;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .arch-box:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+        }
+
+        .arch-box.b1 { border-top: 3px solid #0284c7; }
+        .arch-box.b2 { border-top: 3px solid #2563eb; }
+        .arch-box.b3 { border-top: 3px solid #00ffa3; }
+        .arch-box.b4 { border-top: 3px solid #8b5cf6; }
+
+        .arch-icon {
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        .arch-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+
+        .arch-desc {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* 3. Process Flowchart */
+        .flowchart-container {
+            background: rgba(2, 132, 199, 0.08);
+            border: 1px solid rgba(2, 132, 199, 0.25);
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 22px;
+        }
+
+        .flow-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .step-pill {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 160px;
+        }
+
+        .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .step-info .title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .step-info .sub {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .step-arrow {
+            color: var(--accent);
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        /* 4. Working & 5. Outcomes */
+        .work-list,
+        .outcome-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .work-list li,
+        .outcome-list li {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .work-list li::before {
+            content: "➔";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: 800;
+        }
+
+        .outcome-list li::before {
+            content: "✔";
+            position: absolute;
+            left: 0;
+            color: var(--emerald);
+            font-weight: 800;
+        }
+
+        .work-list strong,
+        .outcome-list strong {
+            color: #ffffff;
+        }
+
+        /* Poster Footer */
+        .poster-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 16px;
+        }
+
+        .footer-text {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .print-btn {
+            background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+            color: #ffffff;
+            border: none;
+            padding: 9px 20px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+        }
+
+        .print-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Print Media for Poster Print */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #0f172a !important;
+                padding: 0 !important;
+            }
+            .chart-poster {
+                border: none !important;
+                box-shadow: none !important;
+                background: #ffffff !important;
+                padding: 10px !important;
+                max-width: 100% !important;
+            }
+            .brand-title h1,
+            .arch-name,
+            .step-info .title,
+            .work-list strong,
+            .outcome-list strong,
+            .problem-item strong {
+                color: #0f172a !important;
+            }
+            .brand-title h1 span,
+            .section-title {
+                color: #0284c7 !important;
+            }
+            .card,
+            .arch-box,
+            .step-pill {
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+            }
+            .flowchart-container {
+                background: #f1f5f9 !important;
+                border-color: #cbd5e1 !important;
+            }
+            .problem-item,
+            .arch-desc,
+            .step-info .sub,
+            .work-list li,
+            .outcome-list li {
+                color: #334155 !important;
+            }
+            .print-btn {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="chart-poster">
+    <!-- Header -->
+    <header class="poster-header">
+        <div class="brand-box">
+            <div class="brand-icon">🩺</div>
+            <div class="brand-title">
+                <h1>MediGuide <span>AI</span></h1>
+                <p>Smart Clinical Diagnostic & Healthcare Assistant • Project Chart</p>
+            </div>
+        </div>
+        <div>
+            <span class="header-tag">Clinical Decision Support</span>
+        </div>
+    </header>
+
+    <!-- Row 1: Problem Statement & Flowchart -->
+    <div class="grid-2col">
+        <!-- 1. Problem Statement -->
+        <div class="card">
+            <div class="section-title">
+                <span>📌</span> 1. Problem Statement
+            </div>
+            <div class="problem-box">
+                <div class="problem-item">
+                    <span class="icon">❌</span>
+                    <div><strong>Access Barrier:</strong> Patients often delay doctor visits due to lack of immediate triage, long queues, and rural accessibility gaps.</div>
+                </div>
+                <div class="problem-item">
+                    <span class="icon">❌</span>
+                    <div><strong>Language & Complexity:</strong> Most health checkers are in English only, text-heavy, and fail without active internet.</div>
+                </div>
+                <div class="problem-item">
+                    <span class="icon">✅</span>
+                    <div><strong>Our Solution:</strong> MediGuide AI gives instant multilingual voice triage, emergency risk assessment, certified PDF reports, and digital OPD token booking.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Working -->
+        <div class="card">
+            <div class="section-title">
+                <span>⚙️</span> 2. Working (Step-by-Step)
+            </div>
+            <ul class="work-list">
+                <li><strong>1. Input:</strong> Speak or select symptoms in Telugu, Hindi, or English.</li>
+                <li><strong>2. Triage:</strong> Predicts condition, risk level (Low/Med/High), & 0-100 Health Score.</li>
+                <li><strong>3. Output:</strong> Instant voice advice, certified PDF report, & digital OPD token slip.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 3. Architecture Diagram (Compact) -->
+    <div class="arch-container">
+        <div class="section-title">
+            <span>🏛️</span> 3. System Architecture Diagram (Compact)
+        </div>
+        <div class="arch-row">
+            <!-- Box 1 -->
+            <div class="arch-box b1">
+                <div class="arch-icon">📱</div>
+                <div class="arch-name">1. UI & Voice</div>
+                <div class="arch-desc">Responsive Glassmorphism UI, Telugu/Hindi/English Voice Narration & Live ECG Canvas.</div>
+            </div>
+
+            <!-- Box 2 -->
+            <div class="arch-box b2">
+                <div class="arch-icon">🌐</div>
+                <div class="arch-name">2. Gateway Layer</div>
+                <div class="arch-desc">Python Flask Server (Port 5050), REST API endpoints & Cloudflare Global Tunnel.</div>
+            </div>
+
+            <!-- Box 3 -->
+            <div class="arch-box b3">
+                <div class="arch-icon">🧠</div>
+                <div class="arch-name">3. Clinical Core</div>
+                <div class="arch-desc">Multi-Symptom Triage Engine, Risk Classification & 0-100 Health Score Calculator.</div>
+            </div>
+
+            <!-- Box 4 -->
+            <div class="arch-box b4">
+                <div class="arch-icon">📄</div>
+                <div class="arch-name">4. Output Services</div>
+                <div class="arch-desc">Certified PDF Report, OPD Digital Token Slip, Hospital Maps Routing & SQLite Database.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Process Flowchart -->
+    <div class="flowchart-container">
+        <div class="section-title" style="margin-bottom:10px;">
+            <span>🔄</span> 4. Process Flowchart
+        </div>
+        <div class="flow-steps">
+            <div class="step-pill">
+                <div class="step-num">1</div>
+                <div class="step-info">
+                    <div class="title">Patient Info</div>
+                    <div class="sub">Age, Gender, Name</div>
+                </div>
+            </div>
+            <div class="step-arrow">➔</div>
+
+            <div class="step-pill">
+                <div class="step-num">2</div>
+                <div class="step-info">
+                    <div class="title">Symptom Input</div>
+                    <div class="sub">Voice or Checkbox</div>
+                </div>
+            </div>
+            <div class="step-arrow">➔</div>
+
+            <div class="step-pill">
+                <div class="step-num">3</div>
+                <div class="step-info">
+                    <div class="title">Clinical Triage</div>
+                    <div class="sub">Severity & Hallmark</div>
+                </div>
+            </div>
+            <div class="step-arrow">➔</div>
+
+            <div class="step-pill">
+                <div class="step-num">4</div>
+                <div class="step-info">
+                    <div class="title">Risk & Score</div>
+                    <div class="sub">0-100 SVG Gauge</div>
+                </div>
+            </div>
+            <div class="step-arrow">➔</div>
+
+            <div class="step-pill">
+                <div class="step-num">5</div>
+                <div class="step-info">
+                    <div class="title">PDF & OPD Token</div>
+                    <div class="sub">Actionable Care</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Outcomes & Results -->
+    <div class="card" style="margin-bottom: 22px;">
+        <div class="section-title">
+            <span>🏆</span> 5. Outcomes & Results
+        </div>
+        <ul class="outcome-list">
+            <li><strong>Instant Clinical Triage (< 1 sec):</strong> Immediate condition matching with high confidence and specialist recommendations.</li>
+            <li><strong>100% Offline Capability:</strong> Dual-mode local database fallback ensures zero failure even without internet connectivity.</li>
+            <li><strong>Universal Multilingual Access:</strong> Complete Telugu, Hindi, and English voice input & speech synthesizer break regional language barriers.</li>
+            <li><strong>Certified PDF Diagnostic Reports:</strong> Vector SVG circular gauges completely eliminate rendering glitches, producing genuine medical documents.</li>
+            <li><strong>Closed-Loop Healthcare:</strong> Direct transition from symptom analysis to hospital navigation and instant OPD digital token slips.</li>
+        </ul>
+    </div>
+
+    <!-- Footer -->
+    <footer class="poster-footer">
+        <div class="footer-text">
+            © 2026 MediGuide AI • Health Informatics Project • Architecture & Specifications Chart
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <a href="/download_chart_pdf" download="MediGuide_AI_Project_Presentation_Chart.pdf" class="print-btn" style="text-decoration:none; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                📥 Download PDF Chart
+            </a>
+            <button class="print-btn" onclick="window.print()">
+                🖨️ Print Poster
+            </button>
+        </div>
+    </footer>
+</div>
+
+</body>
+</html>

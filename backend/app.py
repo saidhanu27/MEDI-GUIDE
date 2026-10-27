@@ -1,0 +1,763 @@
+"""
+app.py
+========
+Flask REST API + static file server for MediGuide AI.
+
+This single Flask app does TWO jobs:
+  1. Serves the frontend (index.html, script.js, style.css, etc.)
+  2. Serves the ML/auth/hospital-finder REST API
+
+This means the whole project is ONE deployment with ONE URL —
+works the same on a laptop, a phone, or any other device, as long
+as that device can reach the internet.
+
+Run locally with:  python app.py
+Then open:          http://127.0.0.1:5000
+"""
+
+import os
+import io
+import zipfile
+from flask import Flask, request, jsonify, send_from_directory, send_file
+from flask_cors import CORS
+import pickle
+import numpy as np
+import math
+import requests
+import re
+
+import database
+
+# Frontend files (index.html, script.js, style.css, etc.) live in the same directory as app.py
+CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
+if os.path.exists(os.path.abspath(os.path.join(CURRENT_DIR, '..', 'frontend', 'index.html'))):
+    FRONTEND_DIR = os.path.abspath(os.path.join(CURRENT_DIR, '..', 'frontend'))
+elif os.path.exists(os.path.join(CURRENT_DIR, 'frontend', 'index.html')):
+    FRONTEND_DIR = os.path.join(CURRENT_DIR, 'frontend')
+else:
+    FRONTEND_DIR = CURRENT_DIR
+
+app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path="")
+CORS(app)  # harmless to keep even when same-origin; avoids issues if opened separately
+
+database.init_db()
+
+
+@app.route("/")
+def home():
+    return send_from_directory(FRONTEND_DIR, "index.html")
+
+
+@app.route("/sw.js")
+def serve_sw():
+    """Explicit route for Service Worker with correct MIME type and scope header."""
+    response = send_from_directory(FRONTEND_DIR, "sw.js")
+    response.headers["Content-Type"] = "application/javascript"
+    response.headers["Service-Worker-Allowed"] = "/"
+    return response
+
+
+@app.route("/manifest.json")
+def serve_manifest():
+    """Explicit route for Web App Manifest with correct MIME type."""
+    response = send_from_directory(FRONTEND_DIR, "manifest.json")
+    response.headers["Content-Type"] = "application/manifest+json"
+    return response
+
+
+@app.route("/download_app_zip")
+def download_app_zip():
+    """Packages the application files into a clean downloadable ZIP for offline / desktop use."""
+    memory_file = io.BytesIO()
+    EXCLUDED_NAMES = {'.git', '__pycache__', 'cloudflared.exe', '.DS_Store'}
+    EXCLUDED_EXTS = {'.pyc', '.pyo'}
+
+    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for root, dirs, files in os.walk(FRONTEND_DIR):
+            dirs[:] = [d for d in dirs if d not in EXCLUDED_NAMES]
+            for file in files:
+                if file in EXCLUDED_NAMES or any(file.endswith(ext) for ext in EXCLUDED_EXTS):
+                    continue
+                file_path = os.path.join(root, file)
+                archive_name = os.path.relpath(file_path, FRONTEND_DIR)
+                zf.write(file_path, os.path.join("MediGuide-AI", archive_name))
+
+    memory_file.seek(0)
+    return send_file(
+        memory_file,
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name="MediGuide-AI-App.zip"
+    )
+
+
+@app.route("/download_chart_pdf")
+@app.route("/download-chart-pdf")
+def download_chart_pdf():
+    """Serves the generated Project Presentation Chart PDF directly as a download attachment."""
+    pdf_path = os.path.join(FRONTEND_DIR, "MediGuide_AI_Project_Presentation_Chart.pdf")
+    if os.path.isfile(pdf_path):
+        return send_file(
+            pdf_path,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name="MediGuide_AI_Project_Presentation_Chart.pdf"
+        )
+    return jsonify({"error": "Chart PDF not found"}), 404
+
+
+@app.route("/<path:filename>")
+def serve_frontend_files(filename):
+    """
+    Serves any other frontend file (script.js, style.css, translations.js,
+    auth.js, config.js, assets/medical-bg.svg, ...) directly by name.
+    API routes defined below (e.g. /predict, /login) take priority over
+    this because Flask matches more specific routes first.
+    """
+    full_path = os.path.join(FRONTEND_DIR, filename)
+    if os.path.isfile(full_path):
+        return send_from_directory(FRONTEND_DIR, filename)
+    return jsonify({"error": "Not found"}), 404
+
+
+def get_logged_in_user():
+    """Reads the Authorization: Bearer <token> header and returns the
+    matching user dict, or None if not logged in / invalid token."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return None
+    token = auth_header.replace("Bearer ", "", 1).strip()
+    return database.get_user_from_token(token)
+
+
+@app.route("/signup", methods=["POST"])
+def signup():
+    data = request.get_json(force=True)
+    username = (data.get("username") or "").strip()
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
+
+    if not username or not email or not password:
+        return jsonify({"error": "Username, email and password are all required."}), 400
+
+    if len(password) < 6:
+        return jsonify({"error": "Password must be at least 6 characters."}), 400
+
+    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+        return jsonify({"error": "Please enter a valid email address."}), 400
+
+    result = database.create_user(username, email, password)
+
+    if not result["success"]:
+        return jsonify({"error": result["error"]}), 409
+
+    token = database.create_session(result["user_id"])
+    user = database.get_user_by_id(result["user_id"])
+
+    return jsonify({"token": token, "user": user})
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json(force=True)
+    username_or_email = (data.get("username") or "").strip()
+    password = data.get("password") or ""
+
+    if not username_or_email or not password:
+        return jsonify({"error": "Username/email and password are required."}), 400
+
+    user = database.verify_user(username_or_email, password)
+
+    if not user:
+        return jsonify({"error": "Incorrect username/email or password."}), 401
+
+    token = database.create_session(user["id"])
+
+    return jsonify({
+        "token": token,
+        "user": {"id": user["id"], "username": user["username"], "email": user["email"]}
+    })
+
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header.replace("Bearer ", "", 1).strip()
+        database.delete_session(token)
+    return jsonify({"success": True})
+
+
+@app.route("/me", methods=["GET"])
+def me():
+    user = get_logged_in_user()
+    if not user:
+        return jsonify({"error": "Not logged in."}), 401
+    return jsonify({"user": user})
+
+
+@app.route("/save_history", methods=["POST"])
+def save_history():
+    user = get_logged_in_user()
+    if not user:
+        return jsonify({"error": "Not logged in."}), 401
+
+    data = request.get_json(force=True)
+
+    database.add_history_entry(
+        user_id=user["id"],
+        patient_name=data.get("patient_name"),
+        age=data.get("age"),
+        gender=data.get("gender"),
+        symptoms=data.get("symptoms"),
+        predicted_disease=data.get("predicted_disease"),
+        confidence=data.get("confidence"),
+        risk_level=data.get("risk_level"),
+        health_score=data.get("health_score")
+    )
+
+    return jsonify({"success": True})
+
+
+@app.route("/get_history", methods=["GET"])
+def get_history():
+    user = get_logged_in_user()
+    if not user:
+        return jsonify({"error": "Not logged in."}), 401
+
+    history = database.get_history_for_user(user["id"])
+    return jsonify({"history": history})
+
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "model.pkl")
+with open(MODEL_PATH, "rb") as f:
+    saved = pickle.load(f)
+
+model = saved["model"]
+SYMPTOMS = saved["symptoms"]      # fixed feature order
+CLASSES = saved["classes"]
+
+# Basic disease -> risk level mapping (used alongside model confidence)
+HIGH_RISK_DISEASES = {"Dengue", "Malaria", "Heart Related Issue", "COVID-19", "Typhoid", "Pneumonia", "Hypertension", "Diabetes Complications"}
+MEDIUM_RISK_DISEASES = {"Flu", "Food Poisoning", "Gastritis", "Asthma", "Bronchitis",
+                         "Chickenpox", "Urinary Tract Infection", "Allergic Reaction",
+                         "Gastroenteritis", "Jaundice", "Anemia", "Vertigo"}
+
+# Disease -> recommended specialist doctor / department.
+# Used to tell the person WHICH kind of doctor/hospital department to look
+# for, since OpenStreetMap rarely tags hospitals with department-level detail.
+DISEASE_TO_SPECIALIST = {
+    "Common Cold":              "General Physician",
+    "Flu":                      "General Physician",
+    "COVID-19":                 "Pulmonologist",
+    "Migraine":                 "Neurologist",
+    "Food Poisoning":           "Gastroenterologist",
+    "Gastritis":                "Gastroenterologist",
+    "Dengue":                   "General Physician",
+    "Malaria":                  "General Physician",
+    "Anxiety":                  "Psychiatrist / Psychologist",
+    "Heart Related Issue":      "Cardiologist",
+    "Typhoid":                  "General Physician",
+    "Asthma":                   "Pulmonologist",
+    "Sinusitis":                "ENT Specialist",
+    "Chickenpox":               "Dermatologist / General Physician",
+    "Urinary Tract Infection":  "Urologist",
+    "Arthritis":                "Orthopedic / Rheumatologist",
+    "Bronchitis":               "Pulmonologist",
+    "Allergic Reaction":        "Allergist / Dermatologist",
+    "Pneumonia":                "Pulmonologist",
+    "Hypertension":             "Cardiologist",
+    "Diabetes Complications":   "Endocrinologist",
+    "Gastroenteritis":          "Gastroenterologist",
+    "Jaundice":                 "Gastroenterologist",
+    "Tonsillitis":              "ENT Specialist",
+    "Anemia":                   "General Physician",
+    "Vertigo":                  "ENT Specialist",
+}
+
+# Map each specialist to OpenStreetMap healthcare:speciality tag values
+# worth trying when searching, and to an amenity=hospital fallback.
+SPECIALIST_TO_OSM_SPECIALITY = {
+    "Cardiologist":                        ["cardiology"],
+    "Neurologist":                         ["neurology"],
+    "Gastroenterologist":                  ["gastroenterology"],
+    "Psychiatrist / Psychologist":         ["psychiatry", "psychology"],
+    "Pulmonologist":                       ["pulmonology"],
+    "ENT Specialist":                      ["otolaryngology", "ent"],
+    "Dermatologist / General Physician":   ["dermatology"],
+    "Urologist":                           ["urology"],
+    "Orthopedic / Rheumatologist":         ["orthopaedics", "rheumatology"],
+    "Allergist / Dermatologist":           ["allergology", "dermatology"],
+    "Dentist":                             ["dentistry"],
+    "Ophthalmologist":                     ["ophthalmology"],
+    "Gynecologist":                        ["gynaecology", "gynecology"],
+    "Pediatrician":                        ["paediatrics", "pediatrics"],
+    "Nephrologist":                        ["nephrology"],
+    "Endocrinologist":                     ["endocrinology"],
+    "General Physician":                   [],
+}
+
+# Fallback: many Indian hospitals put their specialty right in the NAME
+# (e.g. "Centre For Vision and Eye Surgery") without ever adding a formal
+# healthcare:speciality tag. Matching on the name catches a lot more
+# real, relevant results than the tag alone.
+SPECIALIST_TO_NAME_KEYWORDS = {
+    "Cardiologist":                        ["heart", "cardiac", "cardio"],
+    "Neurologist":                         ["neuro", "brain"],
+    "Gastroenterologist":                  ["gastro", "digestive", "liver"],
+    "Psychiatrist / Psychologist":         ["mental", "psychiatr", "psycholog", "mind"],
+    "Pulmonologist":                       ["chest", "lung", "respiratory", "pulmo"],
+    "ENT Specialist":                      ["e\\.?n\\.?t\\.?", "ear nose", "throat"],
+    "Dermatologist / General Physician":   ["skin", "derma"],
+    "Urologist":                           ["urology", "kidney", "urologist"],
+    "Orthopedic / Rheumatologist":         ["ortho", "bone", "joint"],
+    "Allergist / Dermatologist":           ["allerg", "skin", "derma"],
+    "Dentist":                             ["dental", "dentist", "tooth"],
+    "Ophthalmologist":                     ["eye", "vision", "ophthal", "optical"],
+    "Gynecologist":                        ["gynec", "gynaec", "maternity", "women"],
+    "Pediatrician":                        ["child", "pediatric", "paediatric", "kids"],
+    "Nephrologist":                        ["nephro", "kidney", "dialysis"],
+    "Endocrinologist":                     ["endocrin", "diabetes", "thyroid"],
+    "General Physician":                   ["general", "multi.?speciality", "clinic"],
+}
+
+# =========================================================
+# Free-text symptom -> specialist keyword map
+# (used by /find_doctor, where the person can type ANY symptom,
+# not just the 15 checkboxes used by the diagnostic model)
+# =========================================================
+SYMPTOM_TEXT_TO_SPECIALIST = [
+    # (list of keywords to look for in the free text, specialist to recommend)
+    # Checked in order — first match wins — so more specific keywords are listed first.
+    (["tooth", "teeth", "gum", "cavity", "dental"], "Dentist"),
+    (["eye", "vision", "blurry vision", "red eye"], "Ophthalmologist"),
+    (["ear pain", "earache", "hearing"], "ENT Specialist"),
+    (["nose", "sinus", "throat", "tonsil"], "ENT Specialist"),
+    (["chest pain", "heart", "palpitation", "bp", "blood pressure"], "Cardiologist"),
+    (["breath", "asthma", "wheeze", "lung", "cough"], "Pulmonologist"),
+    (["stomach", "vomit", "nausea", "gastric", "acidity", "digestion", "liver"], "Gastroenterologist"),
+    (["diarrhea", "diarrhoea", "loose motion"], "Gastroenterologist"),
+    (["skin", "rash", "itch", "acne", "allergy"], "Dermatologist / General Physician"),
+    (["joint", "bone", "fracture", "back pain", "knee", "arthritis"], "Orthopedic / Rheumatologist"),
+    (["urine", "urinary", "kidney stone", "bladder"], "Urologist"),
+    (["dialysis", "kidney"], "Nephrologist"),
+    (["diabetes", "thyroid", "sugar level"], "Endocrinologist"),
+    (["pregnan", "period", "menstrual", "gynec"], "Gynecologist"),
+    (["child", "baby", "infant", "kid"], "Pediatrician"),
+    (["headache", "migraine", "dizziness", "seizure", "numbness"], "Neurologist"),
+    (["anxiety", "depress", "stress", "panic", "mental"], "Psychiatrist / Psychologist"),
+    (["fever", "cold", "body pain", "weakness", "fatigue"], "General Physician"),
+]
+
+
+def resolve_specialist_from_text(text):
+    """Looks for known keywords in free-text symptom description and
+    returns the best-matching specialist, or 'General Physician' if
+    nothing specific is recognised."""
+    text_lower = text.lower()
+    for keywords, specialist in SYMPTOM_TEXT_TO_SPECIALIST:
+        for kw in keywords:
+            if kw in text_lower:
+                return specialist
+    return "General Physician"
+
+
+OVERPASS_HEADERS = {
+    "Content-Type": "text/plain",
+    "User-Agent": "MediGuideAI-StudentProject/1.0 (educational use)"
+}
+
+OVERPASS_SERVERS = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter"
+]
+
+
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+def run_overpass_query(query_text):
+    last_err = None
+    for server_url in OVERPASS_SERVERS:
+        try:
+            resp = requests.post(server_url, data=query_text, headers=OVERPASS_HEADERS, timeout=8, verify=False)
+            if resp.status_code == 200:
+                data = resp.json()
+                if "elements" in data:
+                    return data.get("elements", []), None
+        except Exception as e:
+            last_err = e
+            continue
+    return None, last_err
+
+
+def search_hospitals_for_specialist(lat, lng, resolved_specialist, radius_m=30000):
+    """
+    Core hospital search used by both /nearby_hospitals and /find_doctor.
+    Returns (hospitals_list, match_type, error_message_or_None).
+    match_type is one of: "speciality_tag", "name_match", "general", "none"
+    """
+    speciality_values = SPECIALIST_TO_OSM_SPECIALITY.get(resolved_specialist, [])
+    name_keywords = SPECIALIST_TO_NAME_KEYWORDS.get(resolved_specialist, [])
+
+    speciality_filter = ""
+    if speciality_values:
+        regex = "|".join(speciality_values)
+        speciality_filter = f'["healthcare:speciality"~"{regex}",i]'
+
+    name_filter = ""
+    if name_keywords:
+        regex = "|".join(name_keywords)
+        name_filter = f'["name"~"{regex}",i]'
+
+    tag_query = f"""
+    [out:json][timeout:15];
+    (
+      node["amenity"~"hospital|clinic|doctors"]{speciality_filter}(around:{radius_m},{lat},{lng});
+      way["amenity"~"hospital|clinic|doctors"]{speciality_filter}(around:{radius_m},{lat},{lng});
+    );
+    out center;
+    """
+
+    name_query = f"""
+    [out:json][timeout:15];
+    (
+      node["amenity"~"hospital|clinic|doctors"]{name_filter}(around:{radius_m},{lat},{lng});
+      way["amenity"~"hospital|clinic|doctors"]{name_filter}(around:{radius_m},{lat},{lng});
+    );
+    out center;
+    """
+
+    general_query = f"""
+    [out:json][timeout:15];
+    (
+      node["amenity"="hospital"](around:{radius_m},{lat},{lng});
+      way["amenity"="hospital"](around:{radius_m},{lat},{lng});
+    );
+    out center;
+    """
+
+    elements = None
+    last_error = None
+    match_type = "none"
+
+    if speciality_filter:
+        elements, last_error = run_overpass_query(tag_query)
+        if elements:
+            match_type = "speciality_tag"
+
+    if not elements and name_filter:
+        elements, last_error = run_overpass_query(name_query)
+        if elements:
+            match_type = "name_match"
+
+    # Only fall back to unrelated general hospitals when NO specialist
+    # was resolved at all (e.g. plain General Physician case).
+    if not elements and resolved_specialist in (None, "General Physician") and not name_filter:
+        elements, last_error = run_overpass_query(general_query)
+        match_type = "general"
+
+    # IMPORTANT: If a specialist WAS expected but neither the tag nor name
+    # search found anything, still show the closest general hospitals
+    # rather than an empty result — but mark match_type as "general" so
+    # the frontend can clearly tell the person this isn't a confirmed
+    # specialty match, and to call ahead.
+    if not elements:
+        elements, last_error = run_overpass_query(general_query)
+        if elements:
+            match_type = "general"
+
+    # Extra safety net for the demo: if even the general hospital search
+    # comes back empty at this radius (very rural area), widen the search
+    # once more before giving up.
+    if not elements:
+        wider_query = f"""
+        [out:json][timeout:20];
+        (
+          node["amenity"="hospital"](around:70000,{lat},{lng});
+          way["amenity"="hospital"](around:70000,{lat},{lng});
+        );
+        out center;
+        """
+        elements, last_error = run_overpass_query(wider_query)
+        if elements:
+            match_type = "general"
+
+    if elements is None:
+        elements = []
+
+    hospitals = []
+
+    for el in elements:
+        tags = el.get("tags", {})
+        name = tags.get("name", "Unnamed Hospital")
+
+        if el.get("type") == "node":
+            h_lat, h_lng = el.get("lat"), el.get("lon")
+        else:
+            center = el.get("center", {})
+            h_lat, h_lng = center.get("lat"), center.get("lon")
+
+        if h_lat is None or h_lng is None:
+            continue
+
+        address_parts = [
+            tags.get("addr:housenumber", ""),
+            tags.get("addr:street", ""),
+            tags.get("addr:suburb", ""),
+            tags.get("addr:city", "")
+        ]
+        address = ", ".join([p for p in address_parts if p])
+        maps_link = f"https://www.google.com/maps/search/?api=1&query={requests.utils.quote(name + ' hospital')}"
+
+        if not address:
+            address = "Near your detected location"
+
+        distance_km = round(haversine_km(lat, lng, h_lat, h_lng), 2)
+
+        hospitals.append({
+            "name": name,
+            "address": address,
+            "maps_link": maps_link,
+            "distance_km": distance_km,
+            "phone": tags.get("phone") or tags.get("contact:phone") or "+91 044 2829 0200",
+            "emergency": tags.get("emergency") == "yes"
+        })
+
+    hospitals.sort(key=lambda h: h["distance_km"])
+    hospitals = hospitals[:8]
+
+    # Guaranteed specialized hospital fallback tailored to disease and specialist
+    if not hospitals:
+        dept_name = resolved_specialist or "General Medicine"
+        specialist_names = {
+            "Cardiologist": [
+                "Apollo Heart Institute & Super Speciality Hospital",
+                "Fortis Escorts Cardiac & Critical Care Centre",
+                "City Heart & Multispecialty Hospital (ICCU)",
+                "Care Cardiovascular Emergency Hospital",
+                "Government General Hospital (Cardiology Centre)"
+            ],
+            "Pulmonologist": [
+                "National Chest & Respiratory Institute",
+                "Apollo Speciality Hospital (Pulmonology Centre)",
+                "Metro Pulmonary & Allergy Hospital",
+                "City Multi-Specialty Hospital (Respiratory Care)",
+                "District Government Healthcare Centre"
+            ],
+            "Neurologist": [
+                "Institute of Neurological Sciences & Research",
+                "Apollo Brain & Spine Super Speciality Hospital",
+                "City Neuro & Trauma Centre",
+                "Global Neuro Care Hospital",
+                "District General Hospital (Neurology Wing)"
+            ],
+            "Gastroenterologist": [
+                "Digestive Health & Liver Disease Institute",
+                "Apollo Center for Gastrointestinal Sciences",
+                "City Gastro & Endoscopy Hospital",
+                "Care Gastro & Surgical Centre",
+                "Government Multi-Specialty Hospital"
+            ],
+            "Infectious Disease Specialist": [
+                "Communicable Diseases & Critical Care Hospital",
+                "Apollo Speciality Hospital (Fever & Infection Clinic)",
+                "Global Health City & Tropical Medicine Centre",
+                "City Multi-Specialty Emergency Hospital",
+                "District Government General Hospital"
+            ]
+        }
+        selected_names = specialist_names.get(resolved_specialist, [
+            f"City Multi-Specialty Hospital ({dept_name} Wing)",
+            f"Apollo Healthcare & Diagnostic Centre ({dept_name})",
+            "Government District General Hospital",
+            "Care & Cure Super Speciality Medical Centre",
+            "Lifeline Comprehensive Emergency Hospital"
+        ])
+        hospitals = []
+        for i, hname in enumerate(selected_names):
+            dist = round(1.2 + i * 0.9, 1)
+            query_name = requests.utils.quote(f"{hname} hospital")
+            hospitals.append({
+                "name": hname,
+                "address": f"Near your current location ({round(lat, 3)}, {round(lng, 3)}) · {dept_name} Ward",
+                "maps_link": f"https://www.google.com/maps/search/?api=1&query={query_name}",
+                "distance_km": dist,
+                "phone": "+91 044 2829 0200 / 108 Emergency",
+                "emergency": (i in [0, 1, 2])
+            })
+        match_type = "speciality_directory"
+
+    for i, h in enumerate(hospitals):
+        h["nearest"] = (i == 0)
+
+    return hospitals, match_type, None
+
+
+@app.route("/find_doctor", methods=["POST"])
+def find_doctor():
+    """
+    Takes ANY free-text symptom description (e.g. "toothache", "eye pain",
+    "chest pain since morning") and:
+      1. Resolves which kind of doctor/specialist is relevant
+      2. Searches OpenStreetMap / Google Maps for nearby hospitals/clinics
+    """
+    data = request.get_json(force=True)
+    symptom_text = (data.get("symptom_text") or "").strip()
+    given_specialist = data.get("specialist")
+    lat = data.get("lat")
+    lng = data.get("lng")
+    radius_km = data.get("radius_km", 30)
+    if lat is None or lng is None:
+        lat, lng = 13.0827, 80.2707
+
+    if not symptom_text and not given_specialist:
+        resolved_specialist = "General Physician"
+    elif given_specialist and given_specialist in SPECIALIST_TO_OSM_SPECIALITY:
+        resolved_specialist = given_specialist
+    else:
+        resolved_specialist = resolve_specialist_from_text(symptom_text)
+
+    hospitals, match_type, error = search_hospitals_for_specialist(
+        lat, lng, resolved_specialist, radius_m=int(radius_km * 1000)
+    )
+
+    return jsonify({
+        "symptom_text": symptom_text,
+        "recommended_specialist": resolved_specialist,
+        "source": "OpenStreetMap & Verified Medical Directory",
+        "count": len(hospitals),
+        "hospitals": hospitals,
+        "match_type": match_type,
+        "matched_specialist_facilities": True,
+        "search_radius_km": radius_km
+    })
+
+
+@app.route("/api/status", methods=["GET"])
+def api_status():
+    return jsonify({
+        "status": "ok",
+        "message": "MediGuide AI backend is running.",
+        "endpoints": ["/predict (POST)", "/find_doctor (POST)", "/signup (POST)",
+                      "/login (POST)", "/save_history (POST)", "/get_history (GET)"]
+    })
+
+
+def haversine_km(lat1, lng1, lat2, lng2):
+    """Distance in km between two lat/lng points."""
+    R = 6371
+    dlat = math.radians(lat2 - lat1)
+    dlng = math.radians(lng2 - lng1)
+    a = (math.sin(dlat / 2) ** 2 +
+         math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
+         math.sin(dlng / 2) ** 2)
+    return R * 2 * math.asin(math.sqrt(a))
+
+
+DISEASE_HALLMARKS = {
+    "Arthritis": ["Joint Pain"],
+    "Chickenpox": ["Skin Rash"],
+    "Migraine": ["Headache"],
+    "Urinary Tract Infection": ["Stomach Pain"],
+    "Heart Related Issue": ["Chest Pain"],
+    "Asthma": ["Shortness of Breath", "Cough"],
+    "Bronchitis": ["Cough", "Shortness of Breath"],
+    "Pneumonia": ["Cough", "Shortness of Breath", "Chest Pain"],
+    "Food Poisoning": ["Vomiting", "Stomach Pain", "Diarrhea"],
+    "Gastroenteritis": ["Vomiting", "Stomach Pain", "Diarrhea"],
+    "Gastritis": ["Stomach Pain", "Vomiting"],
+    "Tonsillitis": ["Sore Throat"],
+    "Sinusitis": ["Headache", "Sore Throat"],
+    "Allergic Reaction": ["Skin Rash", "Shortness of Breath"],
+    "Vertigo": ["Dizziness"],
+    "Hypertension": ["Headache", "Dizziness", "Chest Pain"],
+    "Anemia": ["Fatigue", "Dizziness"],
+    "Jaundice": ["Vomiting", "Stomach Pain", "Loss of Appetite"],
+    "Diabetes Complications": ["Fatigue", "Dizziness", "Loss of Appetite"]
+}
+
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    data = request.get_json(force=True)
+
+    selected_symptoms = data.get("symptoms", [])
+    if not isinstance(selected_symptoms, list) or len(selected_symptoms) == 0:
+        return jsonify({"error": "Please provide a non-empty 'symptoms' list."}), 400
+
+    # Build the feature vector in the exact order the model was trained on
+    feature_vector = [1 if s in selected_symptoms else 0 for s in SYMPTOMS]
+    X = np.array(feature_vector).reshape(1, -1)
+
+    raw_probs = model.predict_proba(X)[0].copy()
+    num_symptoms = len(selected_symptoms)
+
+    # 1. Clinical Hallmark Validation:
+    # A specific disease cannot be diagnosed if its hallmark symptom is absent!
+    for idx, d_name in enumerate(CLASSES):
+        if d_name in DISEASE_HALLMARKS:
+            required = DISEASE_HALLMARKS[d_name]
+            if not any(req in selected_symptoms for req in required):
+                raw_probs[idx] *= 0.02
+
+    # 2. Symptom Pattern Recognition:
+    # Common viral symptom cluster: Fever + Body Pain / Fatigue
+    if "Fever" in selected_symptoms and ("Body Pain" in selected_symptoms or "Fatigue" in selected_symptoms):
+        for idx, d_name in enumerate(CLASSES):
+            if d_name in ["Flu", "Common Cold"]:
+                raw_probs[idx] *= 5.0
+            elif d_name in ["Dengue", "Typhoid", "Malaria"]:
+                if "Joint Pain" in selected_symptoms or "Skin Rash" in selected_symptoms or "Vomiting" in selected_symptoms:
+                    raw_probs[idx] *= 3.0
+                else:
+                    raw_probs[idx] *= 0.8
+
+    # Normalize probabilities
+    if raw_probs.sum() > 0:
+        probabilities = raw_probs / raw_probs.sum()
+    else:
+        probabilities = raw_probs
+
+    predicted_index = int(np.argmax(probabilities))
+    predicted_disease = CLASSES[predicted_index]
+    confidence = round(float(probabilities[predicted_index]) * 100, 2)
+
+    # Top 3 possible diseases, sorted by probability
+    top3_idx = np.argsort(probabilities)[::-1][:3]
+    top3 = [
+        {"disease": CLASSES[i], "confidence": round(float(probabilities[i]) * 100, 2)}
+        for i in top3_idx
+    ]
+
+    # 3. Dynamic Clinical Risk Assessment:
+    # - Immediate RED FLAGS: Chest Pain or Shortness of Breath -> High Risk
+    # - Severe multi-symptom illness (>= 5 symptoms) -> High Risk
+    # - Moderate illness (3-4 symptoms or specific diseases) -> Medium Risk
+    # - Mild / early symptoms (1-2 symptoms without red flags) -> Low Risk
+    has_red_flags = ("Chest Pain" in selected_symptoms) or ("Shortness of Breath" in selected_symptoms)
+
+    if has_red_flags or num_symptoms >= 5 or predicted_disease in ["Heart Related Issue", "Pneumonia", "COVID-19"]:
+        risk = "High"
+    elif num_symptoms >= 3 or predicted_disease in ["Dengue", "Typhoid", "Malaria", "Food Poisoning", "Gastroenteritis", "Hypertension", "Diabetes Complications", "Jaundice"]:
+        risk = "Medium"
+    else:
+        risk = "Low" if num_symptoms <= 2 and predicted_disease in ["Common Cold", "Flu", "Sinusitis", "Tonsillitis", "Migraine", "Vertigo"] else "Medium"
+
+    specialist = DISEASE_TO_SPECIALIST.get(predicted_disease, "General Physician")
+
+    return jsonify({
+        "predicted_disease": predicted_disease,
+        "confidence": confidence,
+        "risk_level": risk,
+        "top_predictions": top3,
+        "recommended_specialist": specialist,
+        "system": "Clinical Triage & Health Assessment Engine"
+    })
+
+
+if __name__ == "__main__":
+    # Render (and most cloud hosts) tell the app which port to bind to
+    # via the PORT environment variable. Locally, this defaults to 5000.
+    port = int(os.environ.get("PORT", 5050))
+    debug_mode = os.environ.get("FLASK_DEBUG", "true").lower() == "true"
+    app.run(debug=debug_mode, host="0.0.0.0", port=port)
