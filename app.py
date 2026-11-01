@@ -759,5 +759,5 @@ if __name__ == "__main__":
     # Render (and most cloud hosts) tell the app which port to bind to
     # via the PORT environment variable. Locally, this defaults to 5000.
     port = int(os.environ.get("PORT", 5050))
-    debug_mode = os.environ.get("FLASK_DEBUG", "true").lower() == "true"
-    app.run(debug=debug_mode, host="0.0.0.0", port=port)
+    debug_mode = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
+    app.run(debug=debug_mode, host="0.0.0.0", port=port, use_reloader=False)
